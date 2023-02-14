@@ -1,0 +1,1053 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://example.com/example.json",
+    "type": "object",
+    "title": "The root schema",
+    "description": "The root schema comprises the entire JSON document.",
+    "default": {},
+    "examples": [
+        {
+            "systemparameters": {
+                "delta": 1.0,
+                "deltactg": 1.0,
+                "deltar": 0.1666667,
+                "deltarctg": 0.16666667
+            },
+            "loads": [
+                {
+                    "bus": 2,
+                    "id": "1",
+                    "tmin": 0.0,
+                    "tmax": 1.0,
+                    "prumax": 100.0,
+                    "prdmax": 100.0,
+                    "prumaxctg": 100.0,
+                    "prdmaxctg": 100.0,
+                    "cblocks": [
+                        {
+                            "pmax": 1000.0,
+                            "c": 1000.0
+                        }
+                    ]
+                }
+            ],
+            "generators": [
+                {
+                    "bus": 1,
+                    "id": "1",
+                    "suqual": 1,
+                    "sdqual": 1,
+                    "suqualctg": 1,
+                    "sdqualctg": 1,
+                    "prumax": 100.0,
+                    "prdmax": 100.0,
+                    "prumaxctg": 100.0,
+                    "prdmaxctg": 100.0,
+                    "oncost": 100.0,
+                    "sucost": 100.0,
+                    "sdcost": 100.0,
+                    "cblocks": [
+                        {
+                            "pmax": 1000.0,
+                            "c": 10.0
+                        }
+                    ]
+                }
+            ],
+            "lines": [
+                {
+                    "origbus": 1,
+                    "destbus": 2,
+                    "id": "1",
+                    "swqual": 1,
+                    "csw": 100.0
+                }
+            ],
+            "transformers": [
+                {
+                    "origbus": 4,
+                    "destbus": 7,
+                    "id": "1",
+                    "swqual": 1,
+                    "csw": 100.0
+                }
+            ],
+            "pcblocks": [
+                {
+                    "pmax": 1000000000000.0,
+                    "c": 10000.0
+                }
+            ],
+            "qcblocks": [
+                {
+                    "qmax": 1000000000000.0,
+                    "c": 10000.0
+                }
+            ],
+            "scblocks": [
+                {
+                    "tmax": 0.05,
+                    "c": 50.0
+                }
+            ]
+        }
+    ],
+    "required": [
+        "systemparameters",
+        "loads",
+        "generators",
+        "lines",
+        "transformers",
+        "pcblocks",
+        "qcblocks",
+        "scblocks"
+    ],
+    "additionalProperties": true,
+    "properties": {
+        "systemparameters": {
+            "$id": "#/properties/systemparameters",
+            "type": "object",
+            "title": "The systemparameters schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": {},
+            "examples": [
+                {
+                    "delta": 1.0,
+                    "deltactg": 1.0,
+                    "deltar": 0.1666667,
+                    "deltarctg": 0.16666667
+                }
+            ],
+            "required": [
+                "delta",
+                "deltactg",
+                "deltar",
+                "deltarctg"
+            ],
+            "additionalProperties": true,
+            "properties": {
+                "delta": {
+                    "$id": "#/properties/systemparameters/properties/delta",
+                    "type": "number",
+                    "title": "The delta schema",
+                    "description": "An explanation about the purpose of this instance.",
+                    "default": 0.0,
+                    "examples": [
+                        1.0
+                    ]
+                },
+                "deltactg": {
+                    "$id": "#/properties/systemparameters/properties/deltactg",
+                    "type": "number",
+                    "title": "The deltactg schema",
+                    "description": "An explanation about the purpose of this instance.",
+                    "default": 0.0,
+                    "examples": [
+                        1.0
+                    ]
+                },
+                "deltar": {
+                    "$id": "#/properties/systemparameters/properties/deltar",
+                    "type": "number",
+                    "title": "The deltar schema",
+                    "description": "An explanation about the purpose of this instance.",
+                    "default": 0.0,
+                    "examples": [
+                        0.1666667
+                    ]
+                },
+                "deltarctg": {
+                    "$id": "#/properties/systemparameters/properties/deltarctg",
+                    "type": "number",
+                    "title": "The deltarctg schema",
+                    "description": "An explanation about the purpose of this instance.",
+                    "default": 0.0,
+                    "examples": [
+                        0.16666667
+                    ]
+                }
+            }
+        },
+        "loads": {
+            "$id": "#/properties/loads",
+            "type": "array",
+            "title": "The loads schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": [],
+            "examples": [
+                [
+                    {
+                        "bus": 3,
+                        "id": "1",
+                        "tmin": 0.0,
+                        "tmax": 1.0,
+                        "prumax": 100.0,
+                        "prdmax": 100.0,
+                        "prumaxctg": 100.0,
+                        "prdmaxctg": 100.0,
+                        "cblocks": [
+                            {
+                                "pmax": 1000.0,
+                                "c": 1000.0
+                            }
+                        ]
+                    }
+                ]
+            ],
+            "additionalItems": true,
+            "items": {
+                "anyOf": [
+                    {
+                        "$id": "#/properties/loads/items/anyOf/0",
+                        "type": "object",
+                        "title": "The first anyOf schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": {},
+                        "examples": [
+                            {
+                                "bus": 2,
+                                "id": "1",
+                                "tmin": 0.0,
+                                "tmax": 1.0,
+                                "prumax": 100.0,
+                                "prdmax": 100.0,
+				"prumaxctg": 100.0,
+				"prdmaxctg": 100.0,
+                                "cblocks": [
+                                    {
+                                        "pmax": 1000.0,
+                                        "c": 1000.0
+                                    }
+                                ]
+                            }
+                        ],
+                        "required": [
+                            "bus",
+                            "id",
+                            "tmin",
+                            "tmax",
+                            "prumax",
+                            "prdmax",
+                            "prumaxctg",
+                            "prdmaxctg",
+                            "cblocks"
+                        ],
+                        "additionalProperties": true,
+                        "properties": {
+                            "bus": {
+                                "$id": "#/properties/loads/items/anyOf/0/properties/bus",
+                                "type": "integer",
+                                "title": "The bus schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0,
+                                "examples": [
+                                    2
+                                ]
+                            },
+                            "id": {
+                                "$id": "#/properties/loads/items/anyOf/0/properties/id",
+                                "type": "string",
+                                "title": "The id schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": "",
+                                "examples": [
+                                    "1"
+                                ]
+                            },
+                            "tmin": {
+                                "$id": "#/properties/loads/items/anyOf/0/properties/tmin",
+                                "type": "number",
+                                "title": "The tmin schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.0,
+                                "examples": [
+                                    0.0
+                                ]
+                            },
+                            "tmax": {
+                                "$id": "#/properties/loads/items/anyOf/0/properties/tmax",
+                                "type": "number",
+                                "title": "The tmax schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.0,
+                                "examples": [
+                                    1.0
+                                ]
+                            },
+                            "prumax": {
+                                "$id": "#/properties/loads/items/anyOf/0/properties/prumax",
+                                "type": "number",
+                                "title": "The prumax schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.0,
+                                "examples": [
+                                    100.0
+                                ]
+                            },
+                            "prdmax": {
+                                "$id": "#/properties/loads/items/anyOf/0/properties/prdmax",
+                                "type": "number",
+                                "title": "The prdmax schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.0,
+                                "examples": [
+                                    100.0
+                                ]
+                            },
+                            "prumaxctg": {
+                                "$id": "#/properties/loads/items/anyOf/0/properties/prumaxctg",
+                                "type": "number",
+                                "title": "The prumaxctg schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.0,
+                                "examples": [
+                                    100.0
+                                ]
+                            },
+                            "prdmaxctg": {
+                                "$id": "#/properties/loads/items/anyOf/0/properties/prdmaxctg",
+                                "type": "number",
+                                "title": "The prdmaxctg schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.0,
+                                "examples": [
+                                    100.0
+                                ]
+                            },
+                            "cblocks": {
+                                "$id": "#/properties/loads/items/anyOf/0/properties/cblocks",
+                                "type": "array",
+                                "title": "The cblocks schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": [],
+                                "examples": [
+                                    [
+                                        {
+                                            "pmax": 1000.0,
+                                            "c": 1000.0
+                                        }
+                                    ]
+                                ],
+                                "additionalItems": true,
+                                "items": {
+                                    "anyOf": [
+                                        {
+                                            "$id": "#/properties/loads/items/anyOf/0/properties/cblocks/items/anyOf/0",
+                                            "type": "object",
+                                            "title": "The first anyOf schema",
+                                            "description": "An explanation about the purpose of this instance.",
+                                            "default": {},
+                                            "examples": [
+                                                {
+                                                    "pmax": 1000.0,
+                                                    "c": 1000.0
+                                                }
+                                            ],
+                                            "required": [
+                                                "pmax",
+                                                "c"
+                                            ],
+                                            "additionalProperties": true,
+                                            "properties": {
+                                                "pmax": {
+                                                    "$id": "#/properties/loads/items/anyOf/0/properties/cblocks/items/anyOf/0/properties/pmax",
+                                                    "type": "number",
+                                                    "title": "The pmax schema",
+                                                    "description": "An explanation about the purpose of this instance.",
+                                                    "default": 0.0,
+                                                    "examples": [
+                                                        1000.0
+                                                    ]
+                                                },
+                                                "c": {
+                                                    "$id": "#/properties/loads/items/anyOf/0/properties/cblocks/items/anyOf/0/properties/c",
+                                                    "type": "number",
+                                                    "title": "The c schema",
+                                                    "description": "An explanation about the purpose of this instance.",
+                                                    "default": 0.0,
+                                                    "examples": [
+                                                        1000.0
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "$id": "#/properties/loads/items/anyOf/0/properties/cblocks/items"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "$id": "#/properties/loads/items"
+            }
+        },
+        "generators": {
+            "$id": "#/properties/generators",
+            "type": "array",
+            "title": "The generators schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": [],
+            "examples": [
+                [
+                    {
+                        "bus": 2,
+                        "id": "1",
+                        "suqual": 1,
+                        "sdqual": 1,
+                        "suqualctg": 1,
+                        "sdqualctg": 1,
+                        "prumax": 100.0,
+                        "prdmax": 100.0,
+                        "prumaxctg": 100.0,
+                        "prdmaxctg": 100.0,
+                        "oncost": 100.0,
+                        "sucost": 100.0,
+                        "sdcost": 100.0,
+                        "cblocks": [
+                            {
+                                "pmax": 1000.0,
+                                "c": 10.0
+                            }
+                        ]
+                    }
+                ]
+            ],
+            "additionalItems": true,
+            "items": {
+                "anyOf": [
+                    {
+                        "$id": "#/properties/generators/items/anyOf/0",
+                        "type": "object",
+                        "title": "The first anyOf schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": {},
+                        "examples": [
+                            {
+                                "bus": 1,
+                                "id": "1",
+                                "suqual": 1,
+                                "sdqual": 1,
+                                "suqualctg": 1,
+                                "sdqualctg": 1,
+                                "prumax": 100.0,
+                                "prdmax": 100.0,
+                                "prumaxctg": 100.0,
+                                "prdmaxctg": 100.0,
+                                "oncost": 100.0,
+                                "sucost": 100.0,
+                                "sdcost": 100.0,
+                                "cblocks": [
+                                    {
+                                        "pmax": 1000.0,
+                                        "c": 10.0
+                                    }
+                                ]
+                            }
+                        ],
+                        "required": [
+                            "bus",
+                            "id",
+                            "suqual",
+                            "sdqual",
+                            "suqualctg",
+                            "sdqualctg",
+                            "prumax",
+                            "prdmax",
+                            "prumaxctg",
+                            "prdmaxctg",
+                            "oncost",
+                            "sucost",
+                            "sdcost",
+                            "cblocks"
+                        ],
+                        "additionalProperties": true,
+                        "properties": {
+                            "bus": {
+                                "$id": "#/properties/generators/items/anyOf/0/properties/bus",
+                                "type": "integer",
+                                "title": "The bus schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0,
+                                "examples": [
+                                    1
+                                ]
+                            },
+                            "id": {
+                                "$id": "#/properties/generators/items/anyOf/0/properties/id",
+                                "type": "string",
+                                "title": "The id schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": "",
+                                "examples": [
+                                    "1"
+                                ]
+                            },
+                            "suqual": {
+                                "$id": "#/properties/generators/items/anyOf/0/properties/suqual",
+                                "type": "integer",
+                                "title": "The suqual schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "enum": [0, 1],
+                                "default": 0,
+                                "examples": [
+                                    1
+                                ]
+                            },
+                            "sdqual": {
+                                "$id": "#/properties/generators/items/anyOf/0/properties/sdqual",
+                                "type": "integer",
+                                "title": "The sdqual schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "enum": [0, 1],
+                                "default": 0,
+                                "examples": [
+                                    1
+                                ]
+                            },
+                            "suqualctg": {
+                                "$id": "#/properties/generators/items/anyOf/0/properties/suqualctg",
+                                "type": "integer",
+                                "title": "The suqualctg schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "enum": [0, 1],
+                                "default": 0,
+                                "examples": [
+                                    1
+                                ]
+                            },
+                            "sdqualctg": {
+                                "$id": "#/properties/generators/items/anyOf/0/properties/sdqualctg",
+                                "type": "integer",
+                                "title": "The sdqualctg schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "enum": [0, 1],
+                                "default": 0,
+                                "examples": [
+                                    1
+                                ]
+                            },
+                            "prumax": {
+                                "$id": "#/properties/generators/items/anyOf/0/properties/prumax",
+                                "type": "number",
+                                "title": "The prumax schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.0,
+                                "examples": [
+                                    100.0
+                                ]
+                            },
+                            "prdmax": {
+                                "$id": "#/properties/generators/items/anyOf/0/properties/prdmax",
+                                "type": "number",
+                                "title": "The prdmax schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.0,
+                                "examples": [
+                                    100.0
+                                ]
+                            },
+                            "prumaxctg": {
+                                "$id": "#/properties/generators/items/anyOf/0/properties/prumaxctg",
+                                "type": "number",
+                                "title": "The prumaxctg schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.0,
+                                "examples": [
+                                    100.0
+                                ]
+                            },
+                            "prdmaxctg": {
+                                "$id": "#/properties/generators/items/anyOf/0/properties/prdmaxctg",
+                                "type": "number",
+                                "title": "The prdmaxctg schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.0,
+                                "examples": [
+                                    100.0
+                                ]
+                            },
+                            "oncost": {
+                                "$id": "#/properties/generators/items/anyOf/0/properties/oncost",
+                                "type": "number",
+                                "title": "The oncost schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.0,
+                                "examples": [
+                                    100.0
+                                ]
+                            },
+                            "sucost": {
+                                "$id": "#/properties/generators/items/anyOf/0/properties/sucost",
+                                "type": "number",
+                                "title": "The sucost schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.0,
+                                "examples": [
+                                    100.0
+                                ]
+                            },
+                            "sdcost": {
+                                "$id": "#/properties/generators/items/anyOf/0/properties/sdcost",
+                                "type": "number",
+                                "title": "The sdcost schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.0,
+                                "examples": [
+                                    100.0
+                                ]
+                            },
+                            "cblocks": {
+                                "$id": "#/properties/generators/items/anyOf/0/properties/cblocks",
+                                "type": "array",
+                                "title": "The cblocks schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": [],
+                                "examples": [
+                                    [
+                                        {
+                                            "pmax": 1000.0,
+                                            "c": 10.0
+                                        }
+                                    ]
+                                ],
+                                "additionalItems": true,
+                                "items": {
+                                    "anyOf": [
+                                        {
+                                            "$id": "#/properties/generators/items/anyOf/0/properties/cblocks/items/anyOf/0",
+                                            "type": "object",
+                                            "title": "The first anyOf schema",
+                                            "description": "An explanation about the purpose of this instance.",
+                                            "default": {},
+                                            "examples": [
+                                                {
+                                                    "pmax": 1000.0,
+                                                    "c": 10.0
+                                                }
+                                            ],
+                                            "required": [
+                                                "pmax",
+                                                "c"
+                                            ],
+                                            "additionalProperties": true,
+                                            "properties": {
+                                                "pmax": {
+                                                    "$id": "#/properties/generators/items/anyOf/0/properties/cblocks/items/anyOf/0/properties/pmax",
+                                                    "type": "number",
+                                                    "title": "The pmax schema",
+                                                    "description": "An explanation about the purpose of this instance.",
+                                                    "default": 0.0,
+                                                    "examples": [
+                                                        1000.0
+                                                    ]
+                                                },
+                                                "c": {
+                                                    "$id": "#/properties/generators/items/anyOf/0/properties/cblocks/items/anyOf/0/properties/c",
+                                                    "type": "number",
+                                                    "title": "The c schema",
+                                                    "description": "An explanation about the purpose of this instance.",
+                                                    "default": 0.0,
+                                                    "examples": [
+                                                        10.0
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "$id": "#/properties/generators/items/anyOf/0/properties/cblocks/items"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "$id": "#/properties/generators/items"
+            }
+        },
+        "lines": {
+            "$id": "#/properties/lines",
+            "type": "array",
+            "title": "The lines schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": [],
+            "examples": [
+                [
+                    {
+                        "origbus": 1,
+                        "destbus": 5,
+                        "id": "1",
+                        "swqual": 1,
+                        "csw": 100.0
+                    }
+                ]
+            ],
+            "additionalItems": true,
+            "items": {
+                "anyOf": [
+                    {
+                        "$id": "#/properties/lines/items/anyOf/0",
+                        "type": "object",
+                        "title": "The first anyOf schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": {},
+                        "examples": [
+                            {
+                                "origbus": 1,
+                                "destbus": 2,
+                                "id": "1",
+                                "swqual": 1,
+                                "csw": 100.0
+                            }
+                        ],
+                        "required": [
+                            "origbus",
+                            "destbus",
+                            "id",
+                            "swqual",
+                            "csw"
+                        ],
+                        "additionalProperties": true,
+                        "properties": {
+                            "origbus": {
+                                "$id": "#/properties/lines/items/anyOf/0/properties/origbus",
+                                "type": "integer",
+                                "title": "The origbus schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0,
+                                "examples": [
+                                    1
+                                ]
+                            },
+                            "destbus": {
+                                "$id": "#/properties/lines/items/anyOf/0/properties/destbus",
+                                "type": "integer",
+                                "title": "The destbus schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0,
+                                "examples": [
+                                    2
+                                ]
+                            },
+                            "id": {
+                                "$id": "#/properties/lines/items/anyOf/0/properties/id",
+                                "type": "string",
+                                "title": "The id schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": "",
+                                "examples": [
+                                    "1"
+                                ]
+                            },
+                            "swqual": {
+                                "$id": "#/properties/lines/items/anyOf/0/properties/swqual",
+                                "type": "integer",
+                                "title": "The swqual schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "enum": [0, 1],
+                                "default": 0,
+                                "examples": [
+                                    1
+                                ]
+                            },
+                            "csw": {
+                                "$id": "#/properties/lines/items/anyOf/0/properties/csw",
+                                "type": "number",
+                                "title": "The csw schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.0,
+                                "examples": [
+                                    100.0
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "$id": "#/properties/lines/items"
+            }
+        },
+        "transformers": {
+            "$id": "#/properties/transformers",
+            "type": "array",
+            "title": "The transformers schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": [],
+            "examples": [
+                [
+                    {
+                        "origbus": 4,
+                        "destbus": 9,
+                        "id": "1",
+                        "swqual": 1,
+                        "csw": 100.0
+                    }
+                ]
+            ],
+            "additionalItems": true,
+            "items": {
+                "anyOf": [
+                    {
+                        "$id": "#/properties/transformers/items/anyOf/0",
+                        "type": "object",
+                        "title": "The first anyOf schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": {},
+                        "examples": [
+                            {
+                                "origbus": 4,
+                                "destbus": 7,
+                                "id": "1",
+                                "swqual": 1,
+                                "csw": 100.0
+                            }
+                        ],
+                        "required": [
+                            "origbus",
+                            "destbus",
+                            "id",
+                            "swqual",
+                            "csw"
+                        ],
+                        "additionalProperties": true,
+                        "properties": {
+                            "origbus": {
+                                "$id": "#/properties/transformers/items/anyOf/0/properties/origbus",
+                                "type": "integer",
+                                "title": "The origbus schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0,
+                                "examples": [
+                                    4
+                                ]
+                            },
+                            "destbus": {
+                                "$id": "#/properties/transformers/items/anyOf/0/properties/destbus",
+                                "type": "integer",
+                                "title": "The destbus schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0,
+                                "examples": [
+                                    7
+                                ]
+                            },
+                            "id": {
+                                "$id": "#/properties/transformers/items/anyOf/0/properties/id",
+                                "type": "string",
+                                "title": "The id schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": "",
+                                "examples": [
+                                    "1"
+                                ]
+                            },
+                            "swqual": {
+                                "$id": "#/properties/transformers/items/anyOf/0/properties/swqual",
+                                "type": "integer",
+                                "title": "The swqual schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "enum": [0, 1],
+                                "default": 0,
+                                "examples": [
+                                    1
+                                ]
+                            },
+                            "csw": {
+                                "$id": "#/properties/transformers/items/anyOf/0/properties/csw",
+                                "type": "number",
+                                "title": "The csw schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.0,
+                                "examples": [
+                                    100.0
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "$id": "#/properties/transformers/items"
+            }
+        },
+        "pcblocks": {
+            "$id": "#/properties/pcblocks",
+            "type": "array",
+            "title": "The pcblocks schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": [],
+            "examples": [
+                [
+                    {
+                        "pmax": 1000000000000.0,
+                        "c": 10000.0
+                    }
+                ]
+            ],
+            "additionalItems": true,
+            "items": {
+                "anyOf": [
+                    {
+                        "$id": "#/properties/pcblocks/items/anyOf/0",
+                        "type": "object",
+                        "title": "The first anyOf schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": {},
+                        "examples": [
+                            {
+                                "pmax": 1000000000000.0,
+                                "c": 10000.0
+                            }
+                        ],
+                        "required": [
+                            "pmax",
+                            "c"
+                        ],
+                        "additionalProperties": true,
+                        "properties": {
+                            "pmax": {
+                                "$id": "#/properties/pcblocks/items/anyOf/0/properties/pmax",
+                                "type": "number",
+                                "title": "The pmax schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 1000000000000.0,
+                                "examples": [
+                                    1000000000000.0
+                                ]
+                            },
+                            "c": {
+                                "$id": "#/properties/pcblocks/items/anyOf/0/properties/c",
+                                "type": "number",
+                                "title": "The c schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 10000.0,
+                                "examples": [
+                                    10000.0
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "$id": "#/properties/pcblocks/items"
+            }
+        },
+        "qcblocks": {
+            "$id": "#/properties/qcblocks",
+            "type": "array",
+            "title": "The qcblocks schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": [],
+            "examples": [
+                [
+                    {
+                        "qmax": 1000000000000.0,
+                        "c": 10000.0
+                    }
+                ]
+            ],
+            "additionalItems": true,
+            "items": {
+                "anyOf": [
+                    {
+                        "$id": "#/properties/qcblocks/items/anyOf/0",
+                        "type": "object",
+                        "title": "The first anyOf schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": {},
+                        "examples": [
+                            {
+                                "qmax": 1000000000000.0,
+                                "c": 10000.0
+                            }
+                        ],
+                        "required": [
+                            "qmax",
+                            "c"
+                        ],
+                        "additionalProperties": true,
+                        "properties": {
+                            "qmax": {
+                                "$id": "#/properties/qcblocks/items/anyOf/0/properties/qmax",
+                                "type": "number",
+                                "title": "The qmax schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 1000000000000.0,
+                                "examples": [
+                                    1000000000000.0
+                                ]
+                            },
+                            "c": {
+                                "$id": "#/properties/qcblocks/items/anyOf/0/properties/c",
+                                "type": "number",
+                                "title": "The c schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 10000.0,
+                                "examples": [
+                                    10000.0
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "$id": "#/properties/qcblocks/items"
+            }
+        },
+        "scblocks": {
+            "$id": "#/properties/scblocks",
+            "type": "array",
+            "title": "The scblocks schema",
+            "description": "An explanation about the purpose of this instance.",
+            "default": [],
+            "examples": [
+                [
+                    {
+                        "tmax": 0.05,
+                        "c": 50.0
+                    }
+                ]
+            ],
+            "additionalItems": true,
+            "items": {
+                "anyOf": [
+                    {
+                        "$id": "#/properties/scblocks/items/anyOf/0",
+                        "type": "object",
+                        "title": "The first anyOf schema",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": {},
+                        "examples": [
+                            {
+                                "tmax": 0.05,
+                                "c": 50.0
+                            }
+                        ],
+                        "required": [
+                            "tmax",
+                            "c"
+                        ],
+                        "additionalProperties": true,
+                        "properties": {
+                            "tmax": {
+                                "$id": "#/properties/scblocks/items/anyOf/0/properties/tmax",
+                                "type": "number",
+                                "title": "The tmax schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.05,
+                                "examples": [
+                                    50.0
+                                ]
+                            },
+                            "c": {
+                                "$id": "#/properties/scblocks/items/anyOf/0/properties/c",
+                                "type": "number",
+                                "title": "The c schema",
+                                "description": "An explanation about the purpose of this instance.",
+                                "default": 0.0,
+                                "examples": [
+                                    0.0
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "$id": "#/properties/scblocks/items"
+            }
+        }
+    }
+}
+
