@@ -23,6 +23,11 @@ running the following:
 conda env create -f environment.yml
 ```
 
+You can update the environment with:
+```
+conda env export | cut -f -2 -d "=" | grep -v "prefix" > environment.yml
+```
+
 ## Tests
 Use the following command to run tests before committing any new code. Always run tests.
 ```
