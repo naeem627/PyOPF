@@ -290,21 +290,6 @@ class OPF:
             bounds=init_generator_active_bounds
         )
 
-        def init_generator_reactive_power(m: pe.ConcreteModel,
-                                          gen_bus: int,
-                                          gen_id: str) -> float:
-            """
-            Initialize the generator reactive power
-            Args:
-                m: Pyomo model (unused but required)
-                gen_bus: the generator bus number
-                gen_id: the generator id number
-
-            Returns:
-                The value of the reactive power of the generator indexed at (gen_bus,gen_id)
-            """
-            return grid_data["generators"][(gen_bus, gen_id)].Q.value
-
         def init_generator_reactive_bounds(m: pe.ConcreteModel,
                                            gen_bus: int,
                                            gen_id: str) -> tuple[float, float]:
@@ -325,7 +310,7 @@ class OPF:
         model.Qg = pe.Var(
             model.generators_set,
             domain=pe.Reals,
-            initialize=init_generator_reactive_power,
+            initialize=0.,
             bounds=init_generator_reactive_bounds
         )
 

@@ -244,10 +244,5 @@ def _init_var(var_type: str,
         elif lb == 0. and ub == 0.:
             _is_fixed = True
 
-    if "Qg" in name:
-        if lb == 0.:
-            lb = None
-        if ub == 0.:
-            ub = None
     var = Var(name=name, active=True, value=val, domain=domain, lb=lb, ub=ub, doc=doc, fixed=_is_fixed)
     return var
