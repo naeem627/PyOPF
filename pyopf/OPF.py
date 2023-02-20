@@ -4,7 +4,7 @@
 
   Created Date: 02-13-2023
 
-  Updated Date: 02-13-2023
+  Updated Date: 02-19-2023
 
   Email: naeem@naeem.engineer
 
@@ -17,6 +17,7 @@
   opf = OPF()
 """
 import os
+from math import sqrt
 from pathlib import Path
 from typing import Optional
 
@@ -227,6 +228,12 @@ class OPF:
             ordered=True
         )
 
+        # Switched shunts set
+        model.switched_shunts_set = pe.Set(
+            initialize=[(obj.bus, obj.id) for obj in grid_data["switched shunts"].values() if obj.status],
+            ordered=True
+        )
+
         return model
 
     def create_model_decision_variables(self,
@@ -400,23 +407,6 @@ class OPF:
             model.Vi[obj.bus].fix(0.)
 
         # Line current flows (I_line) and transformer current flows (I_transformer)
-        def init_line_current_mag(m: pe.ConcreteModel,
-                                  from_bus: int,
-                                  to_bus: int,
-                                  ckt: str) -> float:
-            """
-            Initialize the line current magnitude at the indicated location
-            Args:
-                m: Pyomo model
-                from_bus: the from bus number of the line
-                to_bus: the to bus number of the line
-                ckt: the circuit of the line
-
-            Returns:
-                The line current magnitude
-            """
-            return grid_data["branches"][(from_bus, to_bus, ckt)].i_mag
-
         def init_line_current_bounds(m: pe.ConcreteModel,
                                      from_bus: int,
                                      to_bus: int,
@@ -433,37 +423,15 @@ class OPF:
                 The line current magnitude bounds
             """
             line = grid_data["branches"][(from_bus, to_bus, ckt)]
-            I_mag_bounds = (None, None) if line.i_max is None else (None, line.i_max)
+            I_mag_bounds = (None, None) if line.i_max is None else (None, line.i_max ** 2)
             return I_mag_bounds
 
         model.I_line = pe.Var(
             model.lines_set,
             domain=pe.NonNegativeReals,
-            initialize=init_line_current_mag,
+            initialize=0.,
             bounds=init_line_current_bounds
         )
-
-        def init_transformer_current_mag(m: pe.ConcreteModel,
-                                         from_bus: int,
-                                         to_bus: int,
-                                         ckt: str) -> pe.Expression:
-            """
-            Initialize the transformer current magnitude at the indicated location
-            Args:
-                m: Pyomo model
-                from_bus: the from bus number of the transformer
-                to_bus: the to bus number of the transformer
-                ckt: the circuit of the transformer
-
-            Returns:
-                The transformer current magnitude
-            """
-            Ir = grid_data["transformers"][(from_bus, to_bus, ckt)].calc_real_current(
-                m.Vr[from_bus], m.Vr[to_bus], m.Vi[from_bus], m.Vi[to_bus], from_bus)
-            Ii = grid_data["transformers"][(from_bus, to_bus, ckt)].calc_imag_current(
-                m.Vr[from_bus], m.Vr[to_bus], m.Vi[from_bus], m.Vi[to_bus], from_bus)
-            I_mag = pe.sqrt(Ir ** 2 + Ii ** 2)
-            return I_mag
 
         def init_transformer_current_bounds(m: pe.ConcreteModel,
                                             from_bus: int,
@@ -481,14 +449,53 @@ class OPF:
                 The transformer current magnitude bounds
             """
             line = grid_data["transformers"][(from_bus, to_bus, ckt)]
-            I_mag_bounds = (None, None) if line.i_max is None else (None, line.i_max)
+            I_mag_bounds = (None, None) if line.i_max is None else (None, line.i_max ** 2)
             return I_mag_bounds
 
         model.I_transformer = pe.Var(
             model.transformers_set,
             domain=pe.NonNegativeReals,
-            initialize=init_transformer_current_mag,
+            initialize=0.,
             bounds=init_transformer_current_bounds
+        )
+
+        def init_switched_shunt_power(m: pe.ConcreteModel,
+                                      shunt_bus: int,
+                                      shunt_id: str) -> float:
+            """
+            Initialize the generator reactive power
+            Args:
+                m: Pyomo model (unused but required)
+                shunt_bus: the shunt bus number
+                shunt_id: the shunt id
+
+            Returns:
+                The value of the reactive power of the generator indexed at (gen_bus,gen_id)
+            """
+            return grid_data["switched shunts"][(shunt_bus, shunt_id)].Q.value
+
+        def init_switched_shunt_bounds(m: pe.ConcreteModel,
+                                       shunt_bus: int,
+                                       shunt_id: str) -> tuple[float, float]:
+            """
+            Initialize the generator reactive power bounds
+            Args:
+                m: Pyomo model (unused but a required input)
+                shunt_bus: the shunt bus number
+                shunt_id: the shunt id
+
+            Returns:
+                The lower and upper bounds of the generator reactive power
+
+            """
+            switched_shunt = grid_data["switched shunts"][(shunt_bus, shunt_id)]
+            return switched_shunt.Q_min, switched_shunt.Q_max
+
+        model.Qsh = pe.Var(
+            model.switched_shunts_set,
+            domain=pe.Reals,
+            initialize=init_switched_shunt_power,
+            bounds=init_switched_shunt_bounds
         )
 
         return model
@@ -617,7 +624,13 @@ class OPF:
                 if obj.bus == bus and obj.status
             ])
 
-            Ir_constraint = Ir_gen - Ir_load == Ir_line + Ir_transformer + Ir_shunt
+            Ir_swshunt = sum([
+                obj.calc_real_current(m.Vr[obj.bus], m.Vi[obj.bus], m.Qsh[obj.bus])
+                for obj in grid_data["switched shunts"].values()
+                if obj.bus == bus and obj.status
+            ])
+
+            Ir_constraint = Ir_gen - Ir_load == Ir_line + Ir_transformer + Ir_shunt + Ir_swshunt
             return Ir_constraint
 
         model.kcl_real_constraint = pe.Constraint(model.buses_set, rule=kcl_real_constraint)
@@ -674,8 +687,12 @@ class OPF:
                 obj.calc_imag_current(m.Vr[obj.bus], m.Vi[obj.bus]) for obj in grid_data["shunts"].values()
                 if obj.bus == bus and obj.status
             ])
-
-            Ii_constraint = Ii_gen - Ii_load == Ii_line + Ii_transformer + Ii_shunt
+            Ii_swshunt = sum([
+                obj.calc_imag_current(m.Vr[obj.bus], m.Vi[obj.bus], m.Qsh[obj.bus])
+                for obj in grid_data["switched shunts"].values()
+                if obj.bus == bus and obj.status
+            ])
+            Ii_constraint = Ii_gen - Ii_load == Ii_line + Ii_transformer + Ii_shunt + Ii_swshunt
             return Ii_constraint
 
         model.kcl_imag_constraint = pe.Constraint(model.buses_set, rule=kcl_imag_constraint)
@@ -716,7 +733,7 @@ class OPF:
             line = grid_data["branches"][(from_bus, to_bus, ckt)]
             Ir = line.calc_real_current(m.Vr[from_bus], m.Vr[to_bus], m.Vi[from_bus], m.Vi[to_bus], from_bus)
             Ii = line.calc_imag_current(m.Vr[from_bus], m.Vr[to_bus], m.Vi[from_bus], m.Vi[to_bus], from_bus)
-            I_mag = pe.sqrt(Ir ** 2 + Ii ** 2)
+            I_mag = Ir ** 2 + Ii ** 2
             return m.I_line[(from_bus, to_bus, ckt)] == I_mag
 
         model.i_line_constraint = pe.Constraint(model.lines_set, rule=line_current_constraint)
@@ -741,7 +758,7 @@ class OPF:
             transformer = grid_data["transformers"][(from_bus, to_bus, ckt)]
             Ir = transformer.calc_real_current(m.Vr[from_bus], m.Vr[to_bus], m.Vi[from_bus], m.Vi[to_bus], from_bus)
             Ii = transformer.calc_imag_current(m.Vr[from_bus], m.Vr[to_bus], m.Vi[from_bus], m.Vi[to_bus], from_bus)
-            I_mag = pe.sqrt(Ir ** 2 + Ii ** 2)
+            I_mag = Ir ** 2 + Ii ** 2
             return m.I_transformer[(from_bus, to_bus, ckt)] == I_mag
 
         model.i_transformer_constraint = pe.Constraint(model.transformers_set, rule=transformer_current_constraint)
@@ -781,7 +798,7 @@ class OPF:
 
         self._results_summary = results_summary
 
-        logger.info(f"The total cost is {results_summary['Total Cost']}")
+        logger.info(f"The total cost is {results_summary['Total Cost']:,.2f}")
 
     def summarize_solution(self,
                            solved: dict,
@@ -835,7 +852,7 @@ class OPF:
                 "To Bus": key[1],
                 "Ckt": key[2],
                 "Initial": I_line_init[key],
-                "Final": val,
+                "Final": sqrt(val),
                 "Capacity": I_line_capacity[key]
             } for key, val in I_line.items()
         }

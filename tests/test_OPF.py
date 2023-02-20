@@ -57,3 +57,15 @@ class TestOPF:
         _solved_tc = _ieee_118_results["Solved"]["Terminating Condition"]
 
         assert _solved and _solved_tc == "Feasible and Optimal"
+
+    def test_Texas7k(self):
+        _case = "Texas7k"
+        _objective = "min cost"
+
+        _texas7k_results = self.run_opf(_case, _objective)
+
+        # get the solved status
+        _solved = _texas7k_results["Solved"]["Status"]
+        _solved_tc = _texas7k_results["Solved"]["Terminating Condition"]
+
+        assert _solved and _solved_tc == "Feasible and Optimal"

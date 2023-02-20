@@ -7,10 +7,9 @@ Email: naeem@naeem.engineer
 
 Status: Development
 
+Created Date: 12-20-2022
 
-Date Created: December 20, 2022
-
-Last Updated: February 13, 2023
+Updated Date: 02-19-2023
 
 """
 
@@ -65,7 +64,8 @@ def update_grid_data(case_data, opf_data, vb=None):
                 case_data.raw.generators[key].stat = int(0)
 
     for key, ele in case_data.raw.generators.items():
-        v_mag = round(opf_data.V_mag[key[0]].value, 5)
-        ele.vs = v_mag
+        if ele.stat:
+            v_mag = round(opf_data.V_mag[key[0]].value, 5)
+            ele.vs = v_mag
 
     return case_data
