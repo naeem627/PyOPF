@@ -1,7 +1,6 @@
-import warnings
-
 from data_utilities.data import Data
-from pyopf.models.GridData import Branch, Bus, Generator, Load, Shunt, Transformer
+from pyopf.models.TransmissionElements import Branch, Bus, Generator, Load, Shunt, SwitchedShunt, Transformer
+from pyopf.parse.check_island import check_island
 from pyopf.util.Log import Log
 
 
@@ -61,7 +60,7 @@ def parse_fixed_shunts(shunts: dict,
                        non_empty_buses: set,
                        base_mva: float) -> dict:
     for key, ele in shunts_data.items():
-        if ele.status:
+        if ele.status and (ele.gl != 0 or ele.bl != 0):
             shunts[key] = Shunt(shunt_data=ele, id=ele.id, status=ele.status, g_init=ele.gl, b_init=ele.bl,
                                 base_mva=base_mva)
 
@@ -71,21 +70,24 @@ def parse_fixed_shunts(shunts: dict,
 
 
 def parse_switched_shunts(shunts: dict,
+                          switched_shunts: dict,
                           switched_shunts_data: dict,
                           non_empty_buses: set,
                           base_mva: float) -> dict:
     if switched_shunts_data:
         for key, ele in switched_shunts_data.items():
-            if ele.modsw != 0:
-                warnings.warn(f"Found adjustable switched shunt {ele.i}. Adjustable switched shunts not supported. "
-                              f"Treating as fixed shunt.",
-                              RuntimeWarning)
-            else:
-                shunts[(ele.i, '1')] = Shunt(shunt_data=ele, id='1', status=ele.stat, g_init=0, b_init=ele.binit,
-                                             base_mva=base_mva)
-                if shunts[(ele.i, '1')].status and (shunts[(ele.i, '1')].g != 0 or shunts[(ele.i, '1')].b != 0):
+            if ele.status:
+                if ele.modsw == 2:
+                    # Continuous Shunt
+                    switched_shunts[(ele.i, ele.id)] = SwitchedShunt(shunt_data=ele, g_init=0, b_init=ele.binit,
+                                                                     base_mva=base_mva)
+                    non_empty_buses.add(switched_shunts[(ele.i, ele.id)].bus)
+
+                else:
+                    shunts[(ele.i, '1')] = Shunt(shunt_data=ele, id='1', status=ele.stat, g_init=0, b_init=ele.binit,
+                                                 base_mva=base_mva)
                     non_empty_buses.add(shunts[(ele.i, '1')].bus)
-    return shunts
+    return shunts, switched_shunts
 
 
 def parse_transformers(transformers: dict,
@@ -113,6 +115,7 @@ def parse(case: str,
     buses = {}
     branches = {}
     shunts = {}
+    switched_shunts = {}
     transformers = {}
     non_empty_buses = set()
 
@@ -137,7 +140,8 @@ def parse(case: str,
     shunts = parse_fixed_shunts(shunts, data.raw.fixed_shunts, non_empty_buses, base_mva)
 
     # # == SWITCHED SHUNTS == # #
-    shunts = parse_switched_shunts(shunts, data.raw.switched_shunts, non_empty_buses, base_mva)
+    shunts, switched_shunts = parse_switched_shunts(shunts, switched_shunts, data.raw.switched_shunts,
+                                                    non_empty_buses, base_mva)
 
     # # == TRANSFORMERS == # #
     transformers = parse_transformers(transformers, data.raw.transformers, buses, base_mva)
@@ -151,9 +155,38 @@ def parse(case: str,
         "transformers": transformers,
         "branches": branches,
         "shunts": shunts,
+        "switched shunts": switched_shunts,
         "loads": loads,
     }
     case_data_raw = data
-    logger.info(f"Finished parsing grid data for {case}.")
 
+    # # === CHECK FOR ISLANDS AND DANGLING BUSES AND TURN OFF ANY ELEMENTS ON A DANGLING BUS === # #
+    network, grid_data = check_island(grid_data, non_empty_buses, logger)
+
+    for _bus in network["dangling buses"]:
+        buses[_bus].status = 0
+
+    # turn off branches on dangling buses
+    for ele in branches.values():
+        if ele.from_bus in set(network["dangling buses"]):
+            ele.status = 0
+        if ele.to_bus in set(network["dangling buses"]):
+            ele.status = 0
+
+    # turn off transformers on dangling buses
+    for ele in transformers.values():
+        if ele.from_bus in set(network["dangling buses"]):
+            ele.status = 0
+        if ele.to_bus in set(network["dangling buses"]):
+            ele.status = 0
+
+    grid_data["buses"] = buses
+    grid_data["branches"] = branches
+    grid_data["transformers"] = transformers
+
+    logger.info(f"Finished parsing grid data for {case}.")
+    logger.info(
+        f"Buses: {len(buses)}, Generators: {len(generators)}, Transformers: {len(transformers)}, "
+        f"Branches: {len(branches)}, Shunts: {len(shunts)}, Switched Shunts: {len(switched_shunts)}, "
+        f"Loads: {len(loads)}")
     return grid_data, case_data_raw

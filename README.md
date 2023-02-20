@@ -7,7 +7,7 @@ A tool for solving AC Optimal Power Flow (OPF) in Python using Pyomo optimizatio
 ## Description
 
 ACOPF solver that uses a current-voltage formulation. This project is still in development. The only supported cases at 
-the moment are the IEEE-14 and IEEE-118. No other cases have been tested. 
+the moment are the IEEE-14, IEEE-118, and Texas7k. No other cases have been tested. 
 
 Uses [C2DataUtilities](https://github.com/jesseholzerpnnl/C2DataUtilities/) to parse grid data from a RAW file.
 
@@ -42,5 +42,5 @@ Local package installation support coming soon
 
 To run a case such as the IEEE-14 do:
 ```
-python -m pyopf IEEE-14 --obj "min cost"
+python -m pyopf --case IEEE-14 --obj "min cost"
 ```

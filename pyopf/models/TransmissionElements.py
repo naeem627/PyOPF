@@ -38,6 +38,16 @@ class Bus:
         self._v_elo = kwargs.pop("v_elo", _bus_data.evlo)
         self._status = kwargs.pop("status", 1)
 
+    def __repr__(self):
+        msg = f"Bus(bus={self._bus},name={self._name}, type={self._type},status={self._status}, " \
+              f"v_mag={self._v_mag}, v_ang={self._v_ang})"
+        return msg
+
+    def __str__(self):
+        msg = f"Bus is {self._bus} of type {self._type}, status {self._status}, v_mag {self._v_mag:.3f}, " \
+              f"v_ang {self._v_ang:.3f}."
+        return msg
+
     @property
     def bus(self):
         return self._bus
@@ -476,6 +486,14 @@ class Branch:
         self._ratings, self._i_max, self._i_max_ctg = self.calc_ratings(self._rate_a, self._rate_b, self._rate_c,
                                                                         self._base_mva)
 
+    def __repr__(self):
+        msg = f"Branch(from_bus={self._from_bus},to_bus={self._to_bus}, ckt='{self._ckt}',status={self._status})"
+        return msg
+
+    def __str__(self):
+        msg = f"Branch from bus is {self._from_bus}, to bus is {self._to_bus}, and ckt is '{self._ckt}'."
+        return msg
+
     @property
     def from_bus(self):
         return self._from_bus
@@ -747,6 +765,14 @@ class Transformer:
         self._i_max = None if rating < 1e-7 else rating
         self._g_pu = self._r / (self._r ** 2 + self._x ** 2)
         self._b_pu = -self._x / (self._r ** 2 + self._x ** 2)
+
+    def __repr__(self):
+        msg = f"Transformer(from_bus={self._from_bus},to_bus={self._to_bus}, ckt='{self._ckt}',status={self._status})"
+        return msg
+
+    def __str__(self):
+        msg = f"Transformer from bus is {self._from_bus}, to bus is {self._to_bus}, and ckt is '{self._ckt}'."
+        return msg
 
     @property
     def from_bus(self):
@@ -1053,8 +1079,16 @@ class Shunt:
         self._base_mva = kwargs.pop("base_mva", 100)
         _g = kwargs.pop("g_init", 0)
         _b = kwargs.pop("b_init", 1)
-        self._g = float(_g / self._base_mva)
-        self._b = float(_b / self._base_mva)
+        self._g = kwargs.pop("g", float(_g / self._base_mva))
+        self._b = kwargs.pop("b", float(_b / self._base_mva))
+
+    def __repr__(self):
+        msg = f"Shunt(bus={self._bus},id='{self._id}',status={self._status}, G={self._g}, B={self._b})"
+        return msg
+
+    def __str__(self):
+        msg = f"Shunt {self._bus}, '{self._id}'  G={self._g}, and B={self._b}."
+        return msg
 
     @property
     def bus(self):
@@ -1114,4 +1148,204 @@ class Shunt:
                           Vr: Union[PyomoVar, float],
                           Vi: Union[PyomoVar, float]):
         Ii = self._g * Vi + self._b * Vr
+        return Ii
+
+
+class SwitchedShunt:
+
+    @overload
+    def __init__(self,
+                 shunt_data=None,
+                 bus: Optional[int] = None,
+                 id: Optional[str] = None,
+                 status: Optional[int] = None,
+                 g_init: Optional[float] = None,
+                 b_init: Optional[float] = None,
+                 g: Optional[float] = None,
+                 b: Optional[float] = None,
+                 base_mva: Optional[float] = None,
+                 vswhi: Optional[float] = None,
+                 vswlo: Optional[float] = None,
+                 n1: Optional[int] = None,
+                 n2: Optional[int] = None,
+                 n3: Optional[int] = None,
+                 n4: Optional[int] = None,
+                 n5: Optional[int] = None,
+                 n6: Optional[int] = None,
+                 n7: Optional[int] = None,
+                 n8: Optional[int] = None,
+                 b1: Optional[float] = None,
+                 b2: Optional[float] = None,
+                 b3: Optional[float] = None,
+                 b4: Optional[float] = None,
+                 b5: Optional[float] = None,
+                 b6: Optional[float] = None,
+                 b7: Optional[float] = None,
+                 b8: Optional[float] = None
+                 ):
+        ...
+
+    def __init__(self, **kwargs):
+        _shunt_data = kwargs.pop("shunt_data", None)
+        self._bus = kwargs.pop("bus", _shunt_data.i)
+        self._id = kwargs.pop("id", _shunt_data.id)
+        self._status = kwargs.pop("status", _shunt_data.status)
+        self._base_mva = kwargs.pop("base_mva", 100)
+        _g_init = kwargs.pop("g_init", 0)
+        _b_init = kwargs.pop("b_init", 1)
+        self._g = kwargs.pop("g", float(_g_init / self._base_mva))
+        self._b = kwargs.pop("b", float(_b_init / self._base_mva))
+        self._v_swhi = kwargs.pop("vswhi", _shunt_data.vswhi)
+        self._v_swlo = kwargs.pop("vswlo", _shunt_data.vswlo)
+        self._n1 = kwargs.pop("n1", _shunt_data.n1)
+        self._n2 = kwargs.pop("n2", _shunt_data.n2)
+        self._n3 = kwargs.pop("n3", _shunt_data.n3)
+        self._n4 = kwargs.pop("n4", _shunt_data.n4)
+        self._n5 = kwargs.pop("n5", _shunt_data.n5)
+        self._n6 = kwargs.pop("n6", _shunt_data.n6)
+        self._n7 = kwargs.pop("n7", _shunt_data.n7)
+        self._n8 = kwargs.pop("n8", _shunt_data.n8)
+        self._b1 = kwargs.pop("b1", _shunt_data.b1)
+        self._b2 = kwargs.pop("b2", _shunt_data.b2)
+        self._b3 = kwargs.pop("b3", _shunt_data.b3)
+        self._b4 = kwargs.pop("b4", _shunt_data.b4)
+        self._b5 = kwargs.pop("b5", _shunt_data.b5)
+        self._b6 = kwargs.pop("b6", _shunt_data.b6)
+        self._b7 = kwargs.pop("b7", _shunt_data.b7)
+        self._b8 = kwargs.pop("b8", _shunt_data.b8)
+
+        _q_min, _q_max = self.compute_qmin_qmax(self._n1, self._n2, self._n3, self._n4, self._n5, self._n6, self._n7,
+                                                self._n8, self._b1, self._b2, self._b3, self._b4, self._b5, self._b6,
+                                                self._b7, self._b8)
+        _q_init = _b_init * (self._v_swhi ** 2)
+
+        self._Q = _init_var("Q", name=f"Qsh_{self._bus}_{self._id}",
+                            val=kwargs.pop("Q", float(_q_init / self._base_mva)),
+                            domain="Reals",
+                            lb=kwargs.pop("Q_min", float(_q_min / self._base_mva)),
+                            ub=kwargs.pop("Q_max", float(_q_max / self._base_mva))
+                            )
+
+    def __repr__(self):
+        msg = f"SwitchedShunt(bus={self._bus},id='{self._id}',status={self._status}, Q={self._Q.value})"
+        return msg
+
+    def __str__(self):
+        msg = f"Switched Shunt {self._bus}, '{self._id}' has Q={self._Q.value}."
+        return msg
+
+    @property
+    def bus(self):
+        return self._bus
+
+    @bus.setter
+    def bus(self, val):
+        self._bus = val
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, val):
+        self._id = val
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, val):
+        self._status = val
+
+    @property
+    def base_mva(self):
+        return self._base_mva
+
+    @base_mva.setter
+    def base_mva(self, val):
+        self._base_mva = val
+
+    @property
+    def g(self):
+        return self._g
+
+    @g.setter
+    def g(self, val):
+        self._g = val
+
+    @property
+    def b(self):
+        return self._b
+
+    @b.setter
+    def b(self, val):
+        self._b = val
+
+    @property
+    def Q(self):
+        return self._Q
+
+    @Q.setter
+    def Q(self, val):
+        self._Q.value = val
+
+    @property
+    def Q_max(self):
+        return self._Q.ub
+
+    @property
+    def Q_min(self):
+        return self._Q.lb
+
+    def compute_qmin_qmax(self,
+                          n1: float,
+                          n2: float,
+                          n3: float,
+                          n4: float,
+                          n5: float,
+                          n6: float,
+                          n7: float,
+                          n8: float,
+                          b1: float,
+                          b2: float,
+                          b3: float,
+                          b4: float,
+                          b5: float,
+                          b6: float,
+                          b7: float,
+                          b8: float):
+        b_min = 0.0
+        b_max = 0.0
+        b1 = n1 * b1
+        b2 = n2 * b2
+        b3 = n3 * b3
+        b4 = n4 * b4
+        b5 = n5 * b5
+        b6 = n6 * b6
+        b7 = n7 * b7
+        b8 = n8 * b8
+        for b in [b1, b2, b3, b4, b5, b6, b7, b8]:
+            if b > 0.0:
+                b_max += b
+            elif b < 0.0:
+                b_min += b
+            else:
+                break
+        q_max = b_max * (self._v_swhi ** 2)
+        q_min = b_min * (self._v_swhi ** 2)
+        return q_min, q_max
+
+    def calc_real_current(self,
+                          Vr: Union[PyomoVar, float],
+                          Vi: Union[PyomoVar, float],
+                          Q: Union[PyomoVar, float]):
+        Ir = (Q * Vi) / (Vr ** 2 + Vi ** 2)
+        return Ir
+
+    def calc_imag_current(self,
+                          Vr: Union[PyomoVar, float],
+                          Vi: Union[PyomoVar, float],
+                          Q: Union[PyomoVar, float]):
+        Ii = (- Q * Vr) / (Vr ** 2 + Vi ** 2)
         return Ii
