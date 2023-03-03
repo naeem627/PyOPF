@@ -30,6 +30,7 @@ requirements:
     - matplotlib
     - ipopt
     - pyomo
+    - jsonschema
 
 test:
   imports:

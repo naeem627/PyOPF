@@ -10,7 +10,7 @@ from pyopf.run import _run_opf
 from pyopf.util.Log import Log
 
 
-def main(case,
+def main(case: str,
          objective: Optional[str] = "min dev",
          scenario: Optional[dict] = None):
     # Get root directory path
@@ -36,6 +36,7 @@ def main(case,
     _opf_results = _run_opf(case, objective, case_data_raw, grid_data, filepaths)
     return _opf_results
 
+
 if __name__ == "__main__":
     cli_parser = argparse.ArgumentParser(description="Parse command line inputs")
     cli_parser.add_argument('--case',
@@ -54,4 +55,4 @@ if __name__ == "__main__":
 
     args = cli_parser.parse_args()
 
-    main(args.case,  args.obj, args.scenario)
+    main(args.case, args.obj, args.scenario)
