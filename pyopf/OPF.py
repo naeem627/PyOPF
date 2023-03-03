@@ -501,7 +501,7 @@ class OPF:
         # create load real and reactive power parameters
         Pd = {obj.key: obj.P.value for obj in grid_data["loads"].values()}
         Qd = {obj.key: obj.Q.value for obj in grid_data["loads"].values()}
-        model.Pd = pe.Param(model.loads_set, initialize=Pd, domain=pe.NonNegativeReals)
+        model.Pd = pe.Param(model.loads_set, initialize=Pd, domain=pe.Reals)
         model.Qd = pe.Param(model.loads_set, initialize=Qd, domain=pe.Reals)
 
         # costs

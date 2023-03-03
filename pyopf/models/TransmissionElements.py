@@ -171,16 +171,16 @@ class Load:
         self.status = kwargs.pop("status", _load_data.status)
 
         self._P = _init_var("P", name=f"Pl_{self._bus}_{self._id}",
-                            val=kwargs.pop("P", _load_data.pl / self._base_mva))
+                            val=kwargs.pop("P", _load_data.pl / self._base_mva), domain="Reals")
         self._Q = _init_var("Q", name=f"Ql_{self._bus}_{self._id}",
                             val=kwargs.pop("Q", _load_data.ql / self._base_mva),
                             domain="Reals")
         self._IP = _init_var("IP", name=f"Ipl_{self._bus}_{self._id}",
-                             val=kwargs.pop("IP", _load_data.ip / self._base_mva))
+                             val=kwargs.pop("IP", _load_data.ip / self._base_mva), domain="Reals")
         self._IQ = _init_var("IQ", name=f"Iql_{self._bus}_{self._id}",
-                             val=kwargs.pop("IQ", _load_data.iq / self._base_mva))
+                             val=kwargs.pop("IQ", _load_data.iq / self._base_mva), domain="Reals")
         self._ZP = _init_var("ZP", name=f"Zpl_{self._bus}_{self._id}",
-                             val=kwargs.pop("ZP", _load_data.yp / self._base_mva))
+                             val=kwargs.pop("ZP", _load_data.yp / self._base_mva), domain="Reals")
         self._ZQ = _init_var("ZQ", name=f"Zql_{self._bus}_{self._id}",
                              val=kwargs.pop("ZQ", _load_data.yq / self._base_mva),
                              domain="Reals")
