@@ -12,12 +12,12 @@
 """Git implementation of _version.py."""
 
 import errno
-import functools
 import os
 import re
 import subprocess
 import sys
 from typing import Callable, Dict
+import functools
 
 
 def get_keywords():
@@ -45,7 +45,7 @@ def get_config():
     cfg.VCS = "git"
     cfg.style = "pep440"
     cfg.tag_prefix = "v"
-    cfg.parentdir_prefix = "PyOPF-"
+    cfg.parentdir_prefix = "pyopf-"
     cfg.versionfile_source = "pyopf/_version.py"
     cfg.verbose = False
     return cfg

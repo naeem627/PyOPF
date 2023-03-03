@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 import versioneer
 
 # # Install Requirements # #
-install_requires = ["numpy", "scipy", "networkx", "sympy", "pyomo", "termcolor"]
+install_requires = ["numpy", "scipy", "networkx", "sympy", "pyomo", "termcolor", "setuptools"]
 
 # # Setup Package # #
 
