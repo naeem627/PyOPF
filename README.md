@@ -36,7 +36,9 @@ python -m pytest
 
 ## Build Instructions
 
-Local package installation support coming soon
+```
+conda install pyopf --use-local
+```
 
 ##  Run
 

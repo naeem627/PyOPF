@@ -326,8 +326,7 @@ class OPF:
             Returns:
                 The voltage magnitude setpoint at the bus
             """
-            #
-            return float(grid_data["buses"][bus].v_mag)
+            return 1.0
 
         def init_voltage_mag_bounds(m: pe.ConcreteModel,
                                     bus: int) -> tuple[float, float]:
@@ -360,7 +359,8 @@ class OPF:
             Returns:
                 The real voltage at the bus
             """
-            return grid_data["buses"][bus].v_r
+            # return grid_data["buses"][bus].v_r
+            return 1.0
 
         model.Vr = pe.Var(
             model.buses_set,
@@ -379,7 +379,8 @@ class OPF:
             Returns:
                 The imaginary voltage at the bus
             """
-            return grid_data["buses"][bus].v_i
+            # return grid_data["buses"][bus].v_i
+            return 0.
 
         model.Vi = pe.Var(
             model.buses_set,

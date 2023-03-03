@@ -1,7 +1,5 @@
 from setuptools import find_packages, setup
 
-import versioneer
-
 # # Install Requirements # #
 install_requires = ["numpy", "scipy", "networkx", "sympy", "pyomo", "termcolor", "setuptools"]
 
@@ -9,8 +7,6 @@ install_requires = ["numpy", "scipy", "networkx", "sympy", "pyomo", "termcolor",
 
 setup(
     name="pyopf",
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
     author="Naeem Turner-Bandele",
     maintainer="Naeem Turner-Bandele",
     maintainer_email="naeem@naeem.engineer",

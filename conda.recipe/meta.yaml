@@ -1,0 +1,39 @@
+package:
+  name: pyopf
+  version: {{ environ.get('GIT_DESCRIBE_TAG', '') }}
+
+source:
+  path: ..
+
+build:
+  number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0)}}
+  string: {{ environ.get('GIT_BUILD_STR', '') }}
+  noarch: python
+
+requirements:
+  build:
+    - python {{ PY_VER }}*
+    - setuptools
+    - versioneer
+    - numpy >=1.24*
+    - scipy >=1.10*
+
+  run:
+    - python {{ PY_VER }}*
+    - numpy >=1.24*
+    - scipy >=1.10*
+    - sympy
+    - colorlog
+    - networkx
+    - numexpr
+    - termcolor
+    - matplotlib
+    - ipopt
+    - pyomo
+
+test:
+  imports:
+    - pyopf
+
+about:
+  home: https://github.com/naeem627/PyOPF
