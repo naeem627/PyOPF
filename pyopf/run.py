@@ -35,7 +35,7 @@ def _run_opf(case: str,
 
 def run_opf(case: str,
             dir_cases: str,
-            objective: Optional[str] = "min dev",
+            objective: Optional[str] = "min cost",
             scenario: Optional[dict] = None):
     # Get root directory path
     path_to_root = os.getcwd()

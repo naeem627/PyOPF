@@ -11,7 +11,7 @@ from pyopf.util.Log import Log
 
 
 def main(case: str,
-         objective: Optional[str] = "min dev",
+         objective: Optional[str] = "min cost",
          scenario: Optional[dict] = None):
     # Get root directory path
     path_to_root = os.getcwd()
