@@ -17,7 +17,7 @@
   opf = OPF()
 """
 import os
-from math import sqrt
+from math import sqrt, degrees, atan2
 from pathlib import Path
 from typing import Optional
 
@@ -816,16 +816,19 @@ class OPF:
         # # === VMAG AND VMAG DEVIATION === # #
         V_mag = model.V_mag.extract_values()
         V_mag_init = {key: val.v_mag for key, val in grid_data["buses"].items()}
+        V_ang_init = {key: val.v_ang for key, val in grid_data["buses"].items()}
 
-        V_mag_results = {
+        voltage_results = {
             key: {
                 "Bus": key,
-                "Initial": V_mag_init[key],
-                "Final": val
+                "Vmag Initial": V_mag_init[key],
+                "Vmag Final": val,
+                "Vang Initial": V_ang_init[key],
+                "Vang Final": degrees(atan2(model.Vi[key].value, model.Vr[key].value))
             } for key, val in V_mag.items()
         }
 
-        # # === I_LINE AND I_LINE DEVIATION === # #
+        # # === TRANSFORMER LINE FLOWS  === # #
         I_line = model.I_line.extract_values()
         I_line_init = {key: val.i_mag for key, val in grid_data["branches"].items()}
 
@@ -838,9 +841,26 @@ class OPF:
                 "To Bus": key[1],
                 "Ckt": key[2],
                 "Initial": I_line_init[key],
-                "Final": sqrt(val),
+                "Final": sqrt(abs(val)),
                 "Capacity": I_line_capacity[key]
             } for key, val in I_line.items()
+        }
+
+        # # === TRANSFORMER CURRENT FLOWS === # #
+        I_transformer = model.I_transformer.extract_values()
+        I_transformer_init = {key: val.i_mag for key, val in grid_data["transformers"].items()}
+
+        I_transformer_capacity = {key: val.ub for key, val in model.I_transformer.items()}
+
+        I_transformer_results = {
+            key: {
+                "From Bus": key[0],
+                "To Bus": key[1],
+                "Ckt": key[2],
+                "Initial": I_transformer_init[key],
+                "Final": sqrt(abs(val)),
+                "Capacity": I_transformer_capacity[key]
+            } for key, val in I_transformer.items()
         }
 
         # # === GENERATORS - PG, QG, and DEVIATION Pg, Qg=== # #
@@ -888,8 +908,9 @@ class OPF:
             "Cost per Gen": cost_per_gen,
             "Total Cost": total_cost * 100,
             "Generators": gen_results,
-            "Voltages": V_mag_results,
-            "Lines": I_line_results
+            "Voltages": voltage_results,
+            "Lines": I_line_results,
+            "Transformers": I_transformer_results
         }
 
         return results

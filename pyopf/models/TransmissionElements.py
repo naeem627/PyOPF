@@ -763,6 +763,7 @@ class Transformer:
         rating = self.max_current(self._rate_a, self._rate_b, self._r, self._sbase)
 
         self._i_max = None if rating < 1e-7 else rating
+        self._i_mag = 0.0
         self._g_pu = self._r / (self._r ** 2 + self._x ** 2)
         self._b_pu = -self._x / (self._r ** 2 + self._x ** 2)
 
@@ -917,6 +918,14 @@ class Transformer:
     @i_max.setter
     def i_max(self, val):
         self._i_max = val
+
+    @property
+    def i_mag(self):
+        return self._i_mag
+
+    @i_mag.setter
+    def i_mag(self, val):
+        self._i_mag = val
 
     @property
     def g_pu(self):
