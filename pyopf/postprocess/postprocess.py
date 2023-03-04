@@ -14,7 +14,7 @@ import numpy as np
 from typing import Optional
 from pyopf.preprocess.data_utilities.data import Data
 from pyomo.environ import ConcreteModel
-import pyopf as po
+
 def postprocess_case(scenario_name: str,
                     case_data: Data,
                      opf_results: ConcreteModel,
@@ -47,7 +47,7 @@ def postprocess_case(scenario_name: str,
 
     if release_version is not None:
         case_data.raw.case_identification.record_3 = f"/ {datetime.datetime.today()}; " \
-                                                     f"Produced by PyOPF v{po.__version__};" \
+                                                     f"Produced by PyOPF v0.1;" \
                                                      f" Case Version {release_version}."
 
     modify_transmission_elements(case_data, opf_results, voltage_bounds)
@@ -75,7 +75,7 @@ def postprocess_case(scenario_name: str,
 def modify_transmission_elements(case_data_raw: Data,
                                  opf_results: ConcreteModel,
                                  voltage_bounds: Optional[tuple] = None,
-                                 n_vmag_digits: int = 6,
+                                 n_v_digits: int = 8,
                                  n_gen_digits: int = 6):
     """
     Modify transmission elements based on opf results
@@ -83,7 +83,7 @@ def modify_transmission_elements(case_data_raw: Data,
         case_data_raw: initial data_utilities data object
         opf_results: opf pyomo model results
         voltage_bounds: new voltage bounds
-        n_vmag_digits: number of digits used to round voltage magnitudes
+        n_v_digits: number of digits used to round voltage magnitudes
         n_gen_digits: number of digits used to round real and reactive power of generators
     Returns:
         data_utilities case data object
@@ -91,10 +91,10 @@ def modify_transmission_elements(case_data_raw: Data,
 
     # Adjust voltage magnitudes and angles #
     for key, ele in opf_results.V_mag.items():
-        case_data_raw.raw.buses[key].vm = round(ele.value, n_vmag_digits)
+        case_data_raw.raw.buses[key].vm = round(ele.value, n_v_digits)
         vr = opf_results.Vr[key].value
         vi = opf_results.Vi[key].value
-        case_data_raw.raw.buses[key].va = round(math.degrees(math.atan2(vi, vr)), n_vmag_digits)
+        case_data_raw.raw.buses[key].va = round(math.degrees(math.atan2(vi, vr)), n_v_digits)
         if voltage_bounds is not None:
             case_data_raw.raw.buses[key].nvlo = voltage_bounds[0]
             case_data_raw.raw.buses[key].nvhi = voltage_bounds[1]
@@ -137,9 +137,9 @@ def modify_transmission_elements(case_data_raw: Data,
         if key[0] in opf_results.V_mag:
             remote_bus = case_data_raw.raw.generators[key].ireg
             if remote_bus != 0:
-                v_mag = round(opf_results.V_mag[remote_bus].value, n_vmag_digits)
+                v_mag = round(opf_results.V_mag[remote_bus].value, n_v_digits)
             else:
-                v_mag = round(opf_results.V_mag[key[0]].value, n_vmag_digits)
+                v_mag = round(opf_results.V_mag[key[0]].value, n_v_digits)
             ele.vs = v_mag
 
     # update binit of switched shunts
