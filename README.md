@@ -46,3 +46,4 @@ To run a case such as the IEEE-14 do:
 ```
 python -m pyopf --case IEEE-14 --obj "min cost"
 ```
+Other examples cases are in tests.

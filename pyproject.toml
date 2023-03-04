@@ -1,0 +1,32 @@
+[project]
+name = "pyopf"
+description = "A package to perform AC Optimal Power Flow using a current-voltage formulation."
+readme = "README.md"
+requires-python = ">3.10"
+license = {file = "LICENSE.md"}
+authors = [
+    {name = "Naeem Turner-Bandele", email = "naeem627@users.noreply.github.com"}
+]
+
+maintainers = [
+    {name = "Naeem Turner-Bandele", email = "naeem627@users.noreply.github.com"}
+]
+
+[project.urls]
+"Homepage" = "https://github.com/naeem627/PyOPF"
+"Source" = "https://github.com/naeem627/PyOPF"
+
+[project.scripts]
+pyopf = "pyopf::main"
+
+[tool.versioneer]
+VCS = "git"
+style = "pep440"
+versionfile_source = "pyopf/_version.py"
+versionfile_build = "pyopf/_version.py"
+tag_prefix = "pyopf-"
+parentdir_prefix = "pyopf-"
+
+[build-system]
+requires = ["setuptools", "versioneer[toml]==0.28"]
+build-backend = "setuptools.build_meta"
