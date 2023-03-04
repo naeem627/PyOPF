@@ -1341,8 +1341,8 @@ class SwitchedShunt:
                 b_min += b
             else:
                 break
-        q_max = b_max * (self._v_swhi ** 2)
-        q_min = b_min * (self._v_swhi ** 2)
+        q_max = b_max * 1.0
+        q_min = b_min * 1.0
         return q_min, q_max
 
     def calc_real_current(self,

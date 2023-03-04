@@ -163,23 +163,6 @@ def parse(case: str,
     # # === CHECK FOR ISLANDS AND DANGLING BUSES AND TURN OFF ANY ELEMENTS ON A DANGLING BUS === # #
     network, grid_data = check_island(grid_data, non_empty_buses, logger)
 
-    for _bus in network["dangling buses"]:
-        buses[_bus].status = 0
-
-    # turn off branches on dangling buses
-    for ele in branches.values():
-        if ele.from_bus in set(network["dangling buses"]):
-            ele.status = 0
-        if ele.to_bus in set(network["dangling buses"]):
-            ele.status = 0
-
-    # turn off transformers on dangling buses
-    for ele in transformers.values():
-        if ele.from_bus in set(network["dangling buses"]):
-            ele.status = 0
-        if ele.to_bus in set(network["dangling buses"]):
-            ele.status = 0
-
     grid_data["buses"] = buses
     grid_data["branches"] = branches
     grid_data["transformers"] = transformers

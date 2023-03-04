@@ -20,8 +20,9 @@ import traceback
 
 import networkx as nx
 import numpy as np
+import warnings
 
-#from io import StringIO
+# from io import StringIO
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -36,25 +37,24 @@ except:
     from swsh_utils import solve_py as swsh_solve
     from xfmr_utils import compute_xfmr_position
 
-
 # init_defaults_in_unused_field = True # do this anyway - it is not too big
 read_unused_fields = True
 write_defaults_in_unused_fields = False
 write_values_in_unused_fields = True
-hard_constr_tol = 1e-4 # tolerance on hard constraints, in the units of the model convention, i.e. mostly pu
-gen_cost_dx_margin = 1.0e-6 # ensure that consecutive x points differ by at least this amount
-gen_cost_dydx_min = 1.0e-6 # ensure that the marginal cost (i.e. cost function slope) never goes below this value ???
-gen_cost_y_min = 1.0e-6 # ensure that the cost never goes below this value ???
-gen_cost_ddydx_margin = 1.0e-6 # ensure that consecutive slopes differ by at least this amount
-gen_cost_x_bounds_margin = 1.0e-2 # ensure that the pgen lower and upper bounds are covered by at least this amount
-gen_cost_default_marginal_cost = 1.0e2 # default marginal cost (usd/mw-h) used if a cost function has an error
-raise_extra_field = False # set to true to raise an exception if extra fields are encountered. This can be a problem if a comma appears in an end-of-line comment.
-raise_con_quote = False # set to true to raise an exception if the con file has quotes. might as well accept this since we are rewriting the files
-#gen_cost_revise = False # set to true to revise generator cost functions in the event of a problem, e.g. nonconvexity, not covering pmin, pmax, etc.
-normalize_participation_factors = True # set to true to normalize the participation factors so they sum to 1
-#extend_cost_functions_to_p_min_max = True # set to true to extend the first cost function segment through pmin - 1 and the last one through pmax + 1
-#remove_inner_cost_function_points_nondistinct = True # set to true to remove the inner points in a cost function if they are too close
-#remove_inner_cost_function_points_nonconvex = True # set to true to remove the inner points in a cost function if they violate convexity
+hard_constr_tol = 1e-4  # tolerance on hard constraints, in the units of the model convention, i.e. mostly pu
+gen_cost_dx_margin = 1.0e-6  # ensure that consecutive x points differ by at least this amount
+gen_cost_dydx_min = 1.0e-6  # ensure that the marginal cost (i.e. cost function slope) never goes below this value ???
+gen_cost_y_min = 1.0e-6  # ensure that the cost never goes below this value ???
+gen_cost_ddydx_margin = 1.0e-6  # ensure that consecutive slopes differ by at least this amount
+gen_cost_x_bounds_margin = 1.0e-2  # ensure that the pgen lower and upper bounds are covered by at least this amount
+gen_cost_default_marginal_cost = 1.0e2  # default marginal cost (usd/mw-h) used if a cost function has an error
+raise_extra_field = False  # set to true to raise an exception if extra fields are encountered. This can be a problem if a comma appears in an end-of-line comment.
+raise_con_quote = False  # set to true to raise an exception if the con file has quotes. might as well accept this since we are rewriting the files
+# gen_cost_revise = False # set to true to revise generator cost functions in the event of a problem, e.g. nonconvexity, not covering pmin, pmax, etc.
+normalize_participation_factors = True  # set to true to normalize the participation factors so they sum to 1
+# extend_cost_functions_to_p_min_max = True # set to true to extend the first cost function segment through pmin - 1 and the last one through pmax + 1
+# remove_inner_cost_function_points_nondistinct = True # set to true to remove the inner points in a cost function if they are too close
+# remove_inner_cost_function_points_nonconvex = True # set to true to remove the inner points in a cost function if they violate convexity
 id_str_ok_chars = [
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
     'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -64,32 +64,33 @@ remove_loads_with_pq_eq_0 = True
 remove_switched_shunts_with_no_nonzero_blocks = True
 do_check_line_i_lt_j = False
 do_check_xfmr_i_lt_j = False
-do_check_pb_nonnegative = True # cannot fix this - need to check it though
-do_check_id_str_ok = True # difficult fix - need to check it though
-do_check_rate_pos = False #True # fixed in scrubber
-do_check_swrem_zero = False #True # fixed by scrubber
-do_check_binit_in_integer_set = False # this will be difficult and generally requires MIP
-do_check_bmin_le_binit_le_bmax = True # this is doable
-#do_combine_switched_shunt_blocks_steps = True # generally want this to be false
-do_fix_swsh_binit = True # now this sets binit to the closest feasible value of binit
-do_fix_xfmr_tau_theta_init = True # sets windv1/windv2 or ang1 to closest feasible value if cod1 == 1 or == 3
-max_num_ctgs = 1000000 # maximum number of contingencies
-do_scrub_ctg_labels = True # set to True to replace ctg labels with anonymous strings
+do_check_pb_nonnegative = True  # cannot fix this - need to check it though
+do_check_id_str_ok = True  # difficult fix - need to check it though
+do_check_rate_pos = False  # True # fixed in scrubber
+do_check_swrem_zero = False  # True # fixed by scrubber
+do_check_binit_in_integer_set = False  # this will be difficult and generally requires MIP
+do_check_bmin_le_binit_le_bmax = True  # this is doable
+# do_combine_switched_shunt_blocks_steps = True # generally want this to be false
+do_fix_swsh_binit = True  # now this sets binit to the closest feasible value of binit
+do_fix_xfmr_tau_theta_init = True  # sets windv1/windv2 or ang1 to closest feasible value if cod1 == 1 or == 3
+max_num_ctgs = 1000000  # maximum number of contingencies
+do_scrub_ctg_labels = True  # set to True to replace ctg labels with anonymous strings
 do_scrub_unused_long_strings = True
-pg_qg_stat_mode = 1 # 0: do not scrub, 1: set pg=0 and qg=0, 2: set stat=1
+pg_qg_stat_mode = 1  # 0: do not scrub, 1: set pg=0 and qg=0, 2: set stat=1
 swsh_binit_feas_tol = 1e-4
 swsh_bmin_bmax_tol = 1e-8
-#num_swsh_to_test = 194 # 193 195 # problem with 11152/01
-max_swsh_n = 9 # maximum number of steps in each switched shunt block
+# num_swsh_to_test = 194 # 193 195 # problem with 11152/01
+max_swsh_n = 9  # maximum number of steps in each switched shunt block
 xfmr_tau_theta_init_tol = 1e-4
 EMERGENCY_CAPACITY_FACTOR = 0.1
 EMERGENCY_MARGINAL_COST_FACTOR = 5.0
 debug_check_tau_theta_init_feas = False
-ratec_ratea_2 = False   #report error only once
+ratec_ratea_2 = False  # report error only once
 ratc1_rata1 = False
 default_load_marginal_cost = 8000.0
 default_generator_marginal_cost = 1000.0
-prior_point_pow_imbalance_tol = 1.0 # MVA
+prior_point_pow_imbalance_tol = 1.0  # MVA
+
 
 def timeit(function):
     def timed(*args, **kw):
@@ -98,12 +99,15 @@ def timeit(function):
         end_time = time.time()
         print('function: {}, time: {}'.format(function.__name__, end_time - start_time))
         return result
+
     return timed
 
+
 def alert(alert_dict):
-    #for line in traceback.format_stack():
+    # for line in traceback.format_stack():
     #    print( line.strip() )
     print(alert_dict)
+
 
 def parse_token(token, val_type, default=None):
     if token is None:
@@ -123,27 +127,27 @@ def parse_token(token, val_type, default=None):
         except Exception as e:
             traceback.print_exc()
             raise e
-        #raise Exception('empty field not allowed')
+        # raise Exception('empty field not allowed')
     return val
 
+
 def pad_row(row, new_row_len, allow_extra=False):
-        
     try:
         if len(row) != new_row_len:
             if len(row) < new_row_len:
                 pass
-                #print('missing field, row:')
-                #print(row)
-                #raise Exception('missing field not allowed')
+                # print('missing field, row:')
+                # print(row)
+                # raise Exception('missing field not allowed')
             elif len(row) > new_row_len:
                 if allow_extra:
                     return row
                 row = remove_end_of_line_comment_from_row(row, '/')
                 if len(row) > new_row_len:
-                    alert(
-                        {'data_type': 'Data',
-                         'error_message': 'extra field, please ensure that all rows have the correct number of fields',
-                         'diagnostics': str(row)})
+                    warnings.warn(
+                        f"data_type: Data; error_message: extra field, please ensure that all rows have the correct "
+                        f"number of fields; diagnostics {row}")
+
                     if raise_extra_field:
                         raise Exception('extra field not allowed')
         else:
@@ -161,8 +165,8 @@ def pad_row(row, new_row_len, allow_extra=False):
     return row_new
     '''
 
-def check_row_missing_fields(row, row_len_expected):
 
+def check_row_missing_fields(row, row_len_expected):
     try:
         if len(row) < row_len_expected:
             print('missing field, row:')
@@ -172,31 +176,31 @@ def check_row_missing_fields(row, row_len_expected):
         traceback.print_exc()
         raise e
 
-def check_two_char_id_str(x):
 
+def check_two_char_id_str(x):
     char_ok_alert_dict = {
         'data_type':
-        'IdStr',
+            'IdStr',
         'error_message':
-        'id string has nonallowable characters - each character must be in ["%s"]' % ('","'.join(id_str_ok_chars)),
+            'id string has nonallowable characters - each character must be in ["%s"]' % ('","'.join(id_str_ok_chars)),
         'diagnostics':
-        {'id': x}}
+            {'id': x}}
     if len(x) > 2:
         alert(
             {'data_type':
-             'IdStr2Char',
+                 'IdStr2Char',
              'error_message':
-             'id string too long - must be 1 or 2 characters',
+                 'id string too long - must be 1 or 2 characters',
              'diagnostics':
-             {'id': x}})
+                 {'id': x}})
     if len(x) <= 0:
         alert(
             {'data_type':
-             'IdStr2Char',
+                 'IdStr2Char',
              'error_message':
-             'id string too short - must be 1 or 2 characters',
+                 'id string too short - must be 1 or 2 characters',
              'diagnostics':
-             {'id': x}})
+                 {'id': x}})
     if len(x) == 2:
         x0 = x[0]
         x1 = x[1]
@@ -212,8 +216,8 @@ def check_two_char_id_str(x):
         if not isok:
             alert(char_ok_alert_dict)
 
-def check_id_str_single_char_ok(x):
 
+def check_id_str_single_char_ok(x):
     if do_check_id_str_ok:
         isok = False
         if x in id_str_ok_chars:
@@ -222,8 +226,8 @@ def check_id_str_single_char_ok(x):
         isok = True
     return isok
 
-def remove_end_of_line_comment_from_row_first_occurence(row, end_of_line_str):
 
+def remove_end_of_line_comment_from_row_first_occurence(row, end_of_line_str):
     index = [r.find(end_of_line_str) for r in row]
     len_row = len(row)
     entries_with_end_of_line_strs = [i for i in range(len_row) if index[i] > -1]
@@ -237,67 +241,67 @@ def remove_end_of_line_comment_from_row_first_occurence(row, end_of_line_str):
         row_new = [r for r in row]
     return row_new
 
-def remove_end_of_line_comment_from_row(row, end_of_line_str):
 
+def remove_end_of_line_comment_from_row(row, end_of_line_str):
     index = [r.find(end_of_line_str) for r in row]
     len_row = len(row)
     entries_with_end_of_line_strs = [i for i in range(len_row) if index[i] > -1]
     num_entries_with_end_of_line_strs = len(entries_with_end_of_line_strs)
     if num_entries_with_end_of_line_strs > 0:
-        #last_entry_with_end_of_line_str = min(entries_with_end_of_line_strs)
-        #len_row_new = last_entry_with_end_of_line_str + 1
+        # last_entry_with_end_of_line_str = min(entries_with_end_of_line_strs)
+        # len_row_new = last_entry_with_end_of_line_str + 1
         row_new = [r for r in row]
-        #row_new = [row[i] for i in range(len_row_new)]
+        # row_new = [row[i] for i in range(len_row_new)]
         for i in entries_with_end_of_line_strs:
             row_new[i] = remove_end_of_line_comment(row_new[i], end_of_line_str)
-        #row_new[len_row_new - 1] = remove_end_of_line_comment(row_new[len_row_new - 1], end_of_line_str)
+        # row_new[len_row_new - 1] = remove_end_of_line_comment(row_new[len_row_new - 1], end_of_line_str)
     else:
-        #row_new = [r for r in row]
+        # row_new = [r for r in row]
         row_new = row
     return row_new
 
+
 def remove_end_of_line_comment(token, end_of_line_str):
-    
     token_new = token
     index = token_new.find(end_of_line_str)
     if index > -1:
         token_new = token_new[0:index]
     return token_new
 
-def extract_number(token):
 
+def extract_number(token):
     out = token.strip()
     out = out.split()[0]
     out = out.split(',')[0]
     out = out.split('/')[0]
     return out
 
+
 def check_ctg_label_err(label, max_num):
-    
-    err = 0 # no error
+    err = 0  # no error
     if not label.upper().startswith('CTG_'):
-        err = 1 # does not start with "CTG_"
+        err = 1  # does not start with "CTG_"
         return err
     len_label = len(label)
     if not label[4:].isdigit():
-        err = 2 # characters after "CTG_" are not all digits
+        err = 2  # characters after "CTG_" are not all digits
         return err
     try:
         num = get_ctg_num(label)
     except:
-        err = 3 # failed to convert to integer
+        err = 3  # failed to convert to integer
         return err
     if num > max_num:
-        err = 4 # contingency number too large
+        err = 4  # contingency number too large
         return err
-    return err # err = 0, no error
+    return err  # err = 0, no error
+
 
 def get_ctg_num(label):
-    
     return int(label[4:])
-    
+
+
 def get_ctg_label_err_from_code(code):
-    
     err = ''
     if code == 0:
         err = 'no error'
@@ -313,13 +317,14 @@ def get_ctg_label_err_from_code(code):
         err = 'unknown error code: {}'.format(code)
     return err
 
-def scrub_unused_long_string(in_str):
 
+def scrub_unused_long_string(in_str):
     out_str = in_str
     if do_scrub_unused_long_strings:
         out_str = in_str.replace(',', '.')
     return out_str
-        
+
+
 class Data:
     '''In physical units, i.e. data convention, i.e. input and output data files'''
 
@@ -343,16 +348,16 @@ class Data:
 
     def check(self):
         '''Checks Grid Optimization Competition assumptions'''
-        
+
         self.raw.check()
         self.sup.check()
         self.con.check()
         self.check_gen_implies_cost_gen()
         self.check_cost_gen_implies_gen()
-        #self.check_gen_cost_x_margin()
-        #self.check_no_offline_generators_in_contingencies() # not needed for c2
-        #self.check_no_offline_lines_in_contingencies() # not needed for c2
-        #self.check_no_offline_transformers_in_contingencies() # not needed for c2
+        # self.check_gen_cost_x_margin()
+        # self.check_no_offline_generators_in_contingencies() # not needed for c2
+        # self.check_no_offline_lines_in_contingencies() # not needed for c2
+        # self.check_no_offline_transformers_in_contingencies() # not needed for c2
         self.check_no_generators_in_con_not_in_raw()
         self.check_no_branches_in_con_not_in_raw()
         self.check_no_loads_in_sup_not_in_raw()
@@ -370,17 +375,17 @@ class Data:
     def scrub(self):
         '''modifies certain data elements to meet Grid Optimization Competition assumptions'''
 
-        #if do_combine_switched_shunt_blocks_steps:
+        # if do_combine_switched_shunt_blocks_steps:
         #    self.raw.switched_shunts_combine_blocks_steps()
         self.raw.scrub()
-        #self.sup.scrub()
+        # self.sup.scrub()
         self.con.scrub()
-        #if gen_cost_revise:
+        # if gen_cost_revise:
         #    self.check_gen_cost_revise()
-        #self.scrub_gen_costs()
-        #self.remove_contingencies_with_offline_generators()
-        #self.remove_contingencies_with_offline_lines()
-        #self.remove_contingencies_with_offline_transformers()
+        # self.scrub_gen_costs()
+        # self.remove_contingencies_with_offline_generators()
+        # self.remove_contingencies_with_offline_lines()
+        # self.remove_contingencies_with_offline_transformers()
         self.remove_contingencies_with_generators_not_in_raw()
         self.remove_contingencies_with_branches_not_in_raw()
         self.remove_loads_in_sup_not_in_raw()
@@ -395,10 +400,10 @@ class Data:
     def modify(self, load_mode=None, case_sol=None):
 
         self.modify_load_t_min_max(mode=load_mode, case_sol=case_sol)
-        #self.modify_load_t_min_max(mode='max', values=None)
-        #self.modify_load_t_min_max(mode='min', values=None)
-        #self.modify_load_t_min_max(mode='1', values=None)
-        #self.modify_load_t_min_max(mode='given', values=None)
+        # self.modify_load_t_min_max(mode='max', values=None)
+        # self.modify_load_t_min_max(mode='min', values=None)
+        # self.modify_load_t_min_max(mode='1', values=None)
+        # self.modify_load_t_min_max(mode='given', values=None)
 
     def print_summary(self):
 
@@ -411,24 +416,28 @@ class Data:
         print("transformer impedance correction tables: %u" % len(self.raw.transformer_impedance_correction_tables))
         print("switched_shunts: %u" % len(self.raw.switched_shunts))
         print("contingencies: %u" % len(self.con.contingencies))
-        print("generator contingencies: %u" % len([e for e in self.con.contingencies.values() if len(e.generator_out_events) > 0]))
+        print("generator contingencies: %u" % len(
+            [e for e in self.con.contingencies.values() if len(e.generator_out_events) > 0]))
         branch_contingencies = [e for e in self.con.contingencies.values() if len(e.branch_out_events) > 0]
         print("branch contingencies: %u" % len(branch_contingencies))
         branch_contingency_events = [e.branch_out_events[0] for e in branch_contingencies]
-        branch_contingency_branches = [(e.i,e.j,e.ckt) for e in branch_contingency_events]
-        branch_contingency_branches = [((e[0], e[1], e[2]) if (e[0] < e[1]) else (e[1], e[0], e[2])) for e in branch_contingency_branches]
+        branch_contingency_branches = [(e.i, e.j, e.ckt) for e in branch_contingency_events]
+        branch_contingency_branches = [((e[0], e[1], e[2]) if (e[0] < e[1]) else (e[1], e[0], e[2])) for e in
+                                       branch_contingency_branches]
         nontransformer_branches = [(e.i, e.j, e.ckt) for e in self.raw.nontransformer_branches.values()]
-        nontransformer_branches = [((e[0], e[1], e[2]) if (e[0] < e[1]) else (e[1], e[0], e[2])) for e in nontransformer_branches]
+        nontransformer_branches = [((e[0], e[1], e[2]) if (e[0] < e[1]) else (e[1], e[0], e[2])) for e in
+                                   nontransformer_branches]
         transformers = [(e.i, e.j, e.ckt) for e in self.raw.transformers.values()]
         transformers = [((e[0], e[1], e[2]) if (e[0] < e[1]) else (e[1], e[0], e[2])) for e in transformers]
-        contingency_nontransformer_branches = list(set(branch_contingency_branches).intersection(set(nontransformer_branches)))
+        contingency_nontransformer_branches = list(
+            set(branch_contingency_branches).intersection(set(nontransformer_branches)))
         contingency_transformers = list(set(branch_contingency_branches).intersection(set(transformers)))
         print("nontransformer branch contingencies: %u" % len(contingency_nontransformer_branches))
         print("transformer contingencies: %u" % len(contingency_transformers))
 
     def check_gen_cost_domain(self, scrub_mode=False):
-        
-        cost_domain_tol = self.raw.case_identification.sbase * hard_constr_tol # + hard_constr_tol # todo: put in this extra?
+
+        cost_domain_tol = self.raw.case_identification.sbase * hard_constr_tol  # + hard_constr_tol
         for r in self.raw.get_generators():
             key = (r.i, r.id)
             cblocks = self.sup.generators[r.i, r.id]['cblocks']
@@ -440,12 +449,13 @@ class Data:
                 'cost_pmax': cblocks_total_pmax,
                 'pmax_tol': cost_domain_tol,
                 'cblocks': cblocks}
-            self.check_cost_domain(cblocks, key, cblocks_total_pmax, r.pt, cost_domain_tol, 'Generator', diagnostics, scrub_mode=scrub_mode)
+            self.check_cost_domain(cblocks, key, cblocks_total_pmax, r.pt, cost_domain_tol, 'Generator', diagnostics,
+                                   scrub_mode=scrub_mode)
 
     def check_load_cost_domain(self, scrub_mode=False):
-        
+
         for r in self.raw.get_loads():
-            cost_domain_tol = r.pl * hard_constr_tol # + hard_constr_tol # todo: put in this extra?
+            cost_domain_tol = r.pl * hard_constr_tol  # + hard_constr_tol
             key = (r.i, r.id)
             pmax = r.pl * self.sup.loads[r.i, r.id]['tmax']
             cblocks = self.sup.loads[r.i, r.id]['cblocks']
@@ -460,19 +470,20 @@ class Data:
                 'tmax_tol': hard_constr_tol,
                 'pmax_tol': cost_domain_tol,
                 'cblocks': cblocks}
-            self.check_cost_domain(cblocks, key, cblocks_total_pmax, pmax, cost_domain_tol, 'Load', diagnostics, scrub_mode=scrub_mode)
+            self.check_cost_domain(cblocks, key, cblocks_total_pmax, pmax, cost_domain_tol, 'Load', diagnostics,
+                                   scrub_mode=scrub_mode)
 
     def modify_load_t_min_max(self, mode=None, case_sol=None):
-        
+
         deltar = self.sup.sup_jsonobj['systemparameters']['deltar']
-        
+
         # careful in case some loads have st=0 and therefore are not in case_sol
         if mode == 'given':
             t_given = {(r.i, r.id): 0.0 for r in self.raw.get_loads()}
-            #print('t_given 1: {}'.format(t_given))
+            # print('t_given 1: {}'.format(t_given))
             t_given.update(
                 {k: case_sol.load_t[v] for k, v in case_sol.load_map.items()})
-            #print('t_given 2: {}'.format(t_given))
+            # print('t_given 2: {}'.format(t_given))
 
         # load_i = list(self.load_df.i.values)
         # #load_id = map(clean_string, list(self.load_df.id.values))
@@ -492,7 +503,7 @@ class Data:
             if r.pl > 0.0:
                 feas_t_max = min(feas_t_max, 1.0 + deltar * prumax / r.pl)
                 feas_t_min = max(feas_t_min, 1.0 - deltar * prdmax / r.pl)
-                assert(feas_t_max >= feas_t_min)
+                assert (feas_t_max >= feas_t_min)
             if mode == 'max':
                 tfix = tmax
             elif mode == 'min':
@@ -503,21 +514,23 @@ class Data:
                 tfix = 1.0
             elif mode == 'given':
                 tfix = t_given[r.i, r.id]
-                #pass
-                #tfix = ??
-                #print('mode: {} not implemented yet'.format(mode))
-                #assert(False)
+                # pass
+                # tfix = ??
+                # print('mode: {} not implemented yet'.format(mode))
+                # assert(False)
             else:
                 print('mode: {} not implemented yet'.format(mode))
-                assert(False)
+                assert (False)
             if tfix > feas_t_max:
                 tfix = feas_t_max
             if tfix < feas_t_min:
                 tfix = feas_t_min
-            print('i: {}, id: {}, pl: {}, tmax: {}, tmin: {}'.format(r.i, r.id, r.pl, self.sup.loads[r.i, r.id]['tmax'], self.sup.loads[r.i, r.id]['tmin']))
+            print('i: {}, id: {}, pl: {}, tmax: {}, tmin: {}'.format(r.i, r.id, r.pl, self.sup.loads[r.i, r.id]['tmax'],
+                                                                     self.sup.loads[r.i, r.id]['tmin']))
             self.sup.loads[r.i, r.id]['tmax'] = tfix
             self.sup.loads[r.i, r.id]['tmin'] = tfix
-            print('i: {}, id: {}, pl: {}, tmax: {}, tmin: {}'.format(r.i, r.id, r.pl, self.sup.loads[r.i, r.id]['tmax'], self.sup.loads[r.i, r.id]['tmin']))
+            print('i: {}, id: {}, pl: {}, tmax: {}, tmin: {}'.format(r.i, r.id, r.pl, self.sup.loads[r.i, r.id]['tmax'],
+                                                                     self.sup.loads[r.i, r.id]['tmin']))
 
     def check_cost_domain(self, cblocks, key, cblocks_total_pmax, pmax, tol, data_type, diagnostics, scrub_mode=False):
 
@@ -536,25 +549,26 @@ class Data:
                 {'data_type':
                      data_type,
                  'error_message': (
-                        'Cost function has 0 blocks. We prefer to have at least 1 block.' + (
-                            ' Apply scrubber to set a wide enough cost block with default marginal cost {}.'.format(default_marginal_cost)
-                            if scrub_mode else '')),
+                         'Cost function has 0 blocks. We prefer to have at least 1 block.' + (
+                     ' Apply scrubber to set a wide enough cost block with default marginal cost {}.'.format(
+                         default_marginal_cost)
+                     if scrub_mode else '')),
                  'diagnostics': diagnostics})
         elif shortfall > 0.0:
             alert(
                 {'data_type':
                      data_type,
                  'error_message': (
-                        'Cost function domain does not cover operating range with sufficient tolerance. please ensure the upper bound of the cost function domain exceeds the device operating range by more than the required tolerance.' + (
-                            ' Apply scrubber to extend the most expensive cost block.' if scrub_mode else '')),
+                         'Cost function domain does not cover operating range with sufficient tolerance. please ensure the upper bound of the cost function domain exceeds the device operating range by more than the required tolerance.' + (
+                     ' Apply scrubber to extend the most expensive cost block.' if scrub_mode else '')),
                  'diagnostics': diagnostics})
         elif max([b['pmax'] for b in cblocks]) > pmax + tol + 2.0:
             alert(
                 {'data_type':
                      data_type,
                  'error_message': (
-                        'Cost function domain covers the operating range far beyond needed tolerance. We suggest to set the upper bound of the cost function domain to be a small tolerance beyond the device operating range.' + (
-                            ' Apply the scrubber to truncate the cost blocks so that no single one of them covers the operating range excessively.' if scrub_mode else '')),
+                         'Cost function domain covers the operating range far beyond needed tolerance. We suggest to set the upper bound of the cost function domain to be a small tolerance beyond the device operating range.' + (
+                     ' Apply the scrubber to truncate the cost blocks so that no single one of them covers the operating range excessively.' if scrub_mode else '')),
                  'diagnostics': diagnostics})
         else:
             # return as no scrubbing needed
@@ -564,16 +578,17 @@ class Data:
             return
 
         # scrubbing needed
-        
+
         if num_cblocks == 0:
             new_cblocks = [{'pmax': (shortfall + 1.0), 'c': default_marginal_cost}]
         elif shortfall > 0.0:
             new_cblocks = sorted(cblocks, key=(lambda x: x['c']))
             new_cblocks[num_cblocks - 1]['pmax'] += (shortfall + 1.0)
         elif max([b['pmax'] for b in cblocks]) > pmax + tol + 1:
-            #new_cblocks = [{'pmax': pmax + tol + 1.0, 'c': b['c']} for b in cblocks] # bug: this resets pmax of all blocks, potentially expanding some of them
-            new_cblocks = [{'pmax': min(pmax + tol + 0.5, b['pmax']), 'c': b['c']} for b in cblocks] # bug fix: this resets pmax only for blocks that have too large pmax
-        
+            # new_cblocks = [{'pmax': pmax + tol + 1.0, 'c': b['c']} for b in cblocks] # bug: this resets pmax of all blocks, potentially expanding some of them
+            new_cblocks = [{'pmax': min(pmax + tol + 0.5, b['pmax']), 'c': b['c']} for b in
+                           cblocks]  # bug fix: this resets pmax only for blocks that have too large pmax
+
         if data_type == 'Load':
             self.sup.loads[key]['cblocks'] = new_cblocks
         elif data_type == 'Generator':
@@ -589,9 +604,9 @@ class Data:
         buses_id = [r.i for r in self.raw.get_buses()]
         buses_id = sorted(buses_id)
         num_buses = len(buses_id)
-        lines_id = [(r.i, r.j, r.ckt) for r in self.raw.get_nontransformer_branches() if r.st == 1] # todo check status
+        lines_id = [(r.i, r.j, r.ckt) for r in self.raw.get_nontransformer_branches() if r.st == 1]
         num_lines = len(lines_id)
-        xfmrs_id = [(r.i, r.j, r.ckt) for r in self.raw.get_transformers() if r.stat == 1] # todo check status
+        xfmrs_id = [(r.i, r.j, r.ckt) for r in self.raw.get_transformers() if r.stat == 1]
         num_xfmrs = len(xfmrs_id)
         branches_id = lines_id + xfmrs_id
         num_branches = len(branches_id)
@@ -608,7 +623,7 @@ class Data:
         ctg_branches_id = [(r if r[0] < r[1] else (r[1], r[0], r[2])) for r in ctg_branches_id]
         ctg_branches_id = sorted(list(set(ctg_branches_id)))
         ctg_branches_id_ctg_label_map = {
-            k:[]
+            k: []
             for k in ctg_branches_id}
         for r in self.con.get_contingencies():
             for e in r.branch_out_events:
@@ -619,12 +634,12 @@ class Data:
                 ctg_branches_id_ctg_label_map[k].append(r.label)
         branch_bus_pairs = sorted(list(set([(r[0], r[1]) for r in branches_id])))
         bus_pair_branches_map = {
-            r:[]
+            r: []
             for r in branch_bus_pairs}
         for r in branches_id:
             bus_pair_branches_map[(r[0], r[1])].append(r)
         bus_pair_num_branches_map = {
-            k:len(v)
+            k: len(v)
             for k, v in bus_pair_branches_map.items()}
         bus_nodes_id = [
             'node_bus_{}'.format(r) for r in buses_id]
@@ -637,9 +652,9 @@ class Data:
             for k in branch_bus_pairs if bus_pair_num_branches_map[k] == 1
             for r in bus_pair_branches_map[k]]
         branch_edge_branch_map = {
-            ('node_bus_{}'.format(r[0]), 'node_bus_{}'.format(r[1])):r
+            ('node_bus_{}'.format(r[0]), 'node_bus_{}'.format(r[1])): r
             for k in branch_bus_pairs if bus_pair_num_branches_map[k] == 1
-            for r in bus_pair_branches_map[k]}            
+            for r in bus_pair_branches_map[k]}
         extra_edges_1 = [
             ('node_bus_{}'.format(r[0]), 'node_extra_{}_{}_{}'.format(r[0], r[1], r[2]))
             for k in branch_bus_pairs if bus_pair_num_branches_map[k] > 1
@@ -654,7 +669,7 @@ class Data:
         graph.add_nodes_from(nodes)
         graph.add_edges_from(edges)
         connected_components = list(nx.connected_components(graph))
-        #connected_components = [set(k) for k in connected_components] # todo get only the bus nodes and take only their id number
+        # connected_components = [set(k) for k in connected_components]
         num_connected_components = len(connected_components)
         if num_connected_components > 1:
             if scrub_mode:
@@ -707,57 +722,57 @@ class Data:
                      'error_message':
                          'at least one branch outage contingency causes multiple connected components in the post contingency unswitched system graph',
                      'diagnostics': ctg_bridges})
-                
-    def check_gen_implies_cost_gen(self):   
+
+    def check_gen_implies_cost_gen(self):
 
         gen_set = set([(g.i, g.id) for g in self.raw.get_generators()])
-        cost_gen_set = self.sup.get_generator_ids()     #you will get a unique set
+        cost_gen_set = self.sup.get_generator_ids()  # you will get a unique set
         gen_not_cost_gen = gen_set.difference(cost_gen_set)
         if len(gen_not_cost_gen) > 0:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'Please ensure that every generator in the RAW file is also in the JSON SUP file.',
+                     'Please ensure that every generator in the RAW file is also in the JSON SUP file.',
                  'diagnostics':
-                 {'num gens': len(gen_not_cost_gen),
-                  'gens': [
-                      {'gen i': g[0], 'gen id': g[1]}
-                      for g in gen_not_cost_gen]}})
+                     {'num gens': len(gen_not_cost_gen),
+                      'gens': [
+                          {'gen i': g[0], 'gen id': g[1]}
+                          for g in gen_not_cost_gen]}})
 
     def check_cost_gen_implies_gen(self):
 
         gen_set = set([(g.i, g.id) for g in self.raw.get_generators()])
-        cost_gen_set = self.sup.get_generator_ids()     #you will get a unique set
+        cost_gen_set = self.sup.get_generator_ids()  # you will get a unique set
         cost_gen_not_gen = cost_gen_set.difference(gen_set)
         if len(cost_gen_not_gen) > 0:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'Please ensure that every generator in the JSON SUP file is also in the RAW file.',
+                     'Please ensure that every generator in the JSON SUP file is also in the RAW file.',
                  'diagnostics':
-                 {'num gens': len(cost_gen_not_gen),
-                  'gens': [
-                      {'gen i': g[0], 'gen id': g[1]}
-                      for g in cost_gen_not_gen]}})
+                     {'num gens': len(cost_gen_not_gen),
+                      'gens': [
+                          {'gen i': g[0], 'gen id': g[1]}
+                          for g in cost_gen_not_gen]}})
 
     def remove_generators_in_sup_not_in_raw(self):
 
         gen_set = set([(g.i, g.id) for g in self.raw.get_generators()])
-        cost_gen_set = self.sup.get_generator_ids()     #you will get a unique set
+        cost_gen_set = self.sup.get_generator_ids()  # you will get a unique set
         cost_gen_not_gen = cost_gen_set.difference(gen_set)
         if len(cost_gen_not_gen) > 0:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'Removing generators from the JSON SUP file that are not in the RAW file.',
+                     'Removing generators from the JSON SUP file that are not in the RAW file.',
                  'diagnostics':
-                 {'num gens': len(cost_gen_not_gen),
-                  'gens': [
-                      {'gen i': g[0], 'gen id': g[1]}
-                      for g in cost_gen_not_gen]}})
+                     {'num gens': len(cost_gen_not_gen),
+                      'gens': [
+                          {'gen i': g[0], 'gen id': g[1]}
+                          for g in cost_gen_not_gen]}})
             self.sup.remove_generators(cost_gen_not_gen)
 
     def check_generator_base_case_ramp_constraints_feasible(self):
@@ -822,171 +837,169 @@ class Data:
     def check_no_loads_in_sup_not_in_raw(self):
 
         raw_load_set = set([(r.i, r.id) for r in self.raw.get_loads()])
-        sup_load_set = self.sup.get_load_ids()     #you will get a unique set
+        sup_load_set = self.sup.get_load_ids()  # you will get a unique set
         sup_not_raw_load_set = sup_load_set.difference(raw_load_set)
         if len(sup_not_raw_load_set) > 0:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'Please ensure that every load in the JSON SUP file is also in the RAW file.',
+                     'Please ensure that every load in the JSON SUP file is also in the RAW file.',
                  'diagnostics':
-                 {'num loads sup not raw ': len(sup_not_raw_load_set),
-                  'loads': [
-                      {'i': r[0], 'id': r[1]}
-                      for r in sup_not_raw_load_set]}})
+                     {'num loads sup not raw ': len(sup_not_raw_load_set),
+                      'loads': [
+                          {'i': r[0], 'id': r[1]}
+                          for r in sup_not_raw_load_set]}})
 
     def remove_loads_in_sup_not_in_raw(self):
 
         raw_load_set = set([(r.i, r.id) for r in self.raw.get_loads()])
-        sup_load_set = self.sup.get_load_ids()     #you will get a unique set
+        sup_load_set = self.sup.get_load_ids()  # you will get a unique set
         sup_not_raw_load_set = sup_load_set.difference(raw_load_set)
         if len(sup_not_raw_load_set) > 0:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'Removing loads from JSON SUP file that are not in the RAW file.',
+                     'Removing loads from JSON SUP file that are not in the RAW file.',
                  'diagnostics':
-                 {'num loads sup not raw ': len(sup_not_raw_load_set),
-                  'loads': [
-                      {'i': r[0], 'id': r[1]}
-                      for r in sup_not_raw_load_set]}})
+                     {'num loads sup not raw ': len(sup_not_raw_load_set),
+                      'loads': [
+                          {'i': r[0], 'id': r[1]}
+                          for r in sup_not_raw_load_set]}})
             self.sup.remove_loads(sup_not_raw_load_set)
-        
+
     def check_no_loads_in_raw_not_in_sup(self):
 
         raw_load_set = set([(r.i, r.id) for r in self.raw.get_loads()])
-        sup_load_set = self.sup.get_load_ids()     #you will get a unique set
+        sup_load_set = self.sup.get_load_ids()  # you will get a unique set
         raw_not_sup_load_set = raw_load_set.difference(sup_load_set)
         if len(raw_not_sup_load_set) > 0:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'Please ensure that every load in the RAW file is also in the JSON SUP file.',
+                     'Please ensure that every load in the RAW file is also in the JSON SUP file.',
                  'diagnostics':
-                 {'num loads raw not sup ': len(raw_not_sup_load_set),
-                  'loads': [
-                      {'i': r[0], 'id': r[1]}
-                      for r in raw_not_sup_load_set]}})
+                     {'num loads raw not sup ': len(raw_not_sup_load_set),
+                      'loads': [
+                          {'i': r[0], 'id': r[1]}
+                          for r in raw_not_sup_load_set]}})
 
     def check_no_lines_in_sup_not_in_raw(self):
 
         raw_set = set([(r.i, r.j, r.ckt) for r in self.raw.get_nontransformer_branches()])
-        sup_set = self.sup.get_line_ids()     #you will get a unique set
+        sup_set = self.sup.get_line_ids()  # you will get a unique set
         diff_set = sup_set.difference(raw_set)
         if len(diff_set) > 0:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'Please ensure that every line in the JSON SUP file is also in the RAW file. Also check that I/origin and J/destination designations are consistent across all data files.',
+                     'Please ensure that every line in the JSON SUP file is also in the RAW file. Also check that I/origin and J/destination designations are consistent across all data files.',
                  'diagnostics':
-                 {'num lines sup not raw ': len(diff_set),
-                  'lines': [
-                      {'i': r[0], 'j': r[1], 'id': r[2]}
-                      for r in diff_set]}})
+                     {'num lines sup not raw ': len(diff_set),
+                      'lines': [
+                          {'i': r[0], 'j': r[1], 'id': r[2]}
+                          for r in diff_set]}})
 
     def remove_lines_in_sup_not_in_raw(self):
 
         raw_set = set([(r.i, r.j, r.ckt) for r in self.raw.get_nontransformer_branches()])
-        sup_set = self.sup.get_line_ids()     #you will get a unique set
+        sup_set = self.sup.get_line_ids()  # you will get a unique set
         diff_set = sup_set.difference(raw_set)
         if len(diff_set) > 0:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'Removing lines from the JSON SUP file that are not in the RAW file.',
+                     'Removing lines from the JSON SUP file that are not in the RAW file.',
                  'diagnostics':
-                 {'num lines sup not raw ': len(diff_set),
-                  'lines': [
-                      {'i': r[0], 'j': r[1], 'id': r[2]}
-                      for r in diff_set]}})
+                     {'num lines sup not raw ': len(diff_set),
+                      'lines': [
+                          {'i': r[0], 'j': r[1], 'id': r[2]}
+                          for r in diff_set]}})
             self.sup.remove_lines(diff_set)
 
     def check_no_lines_in_raw_not_in_sup(self):
 
         raw_set = set([(r.i, r.j, r.ckt) for r in self.raw.get_nontransformer_branches()])
-        sup_set = self.sup.get_line_ids()     #you will get a unique set
+        sup_set = self.sup.get_line_ids()  # you will get a unique set
         diff_set = raw_set.difference(sup_set)
         if len(diff_set) > 0:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'Please ensure that every line in the RAW file is also in the JSON SUP file. Also check that I/origin and J/destination designations are consistent across all data files.',
+                     'Please ensure that every line in the RAW file is also in the JSON SUP file. Also check that I/origin and J/destination designations are consistent across all data files.',
                  'diagnostics':
-                 {'num lines raw not sup ': len(diff_set),
-                  'lines': [
-                      {'i': r[0], 'j': r[1], 'id': r[2]}
-                      for r in diff_set]}})
+                     {'num lines raw not sup ': len(diff_set),
+                      'lines': [
+                          {'i': r[0], 'j': r[1], 'id': r[2]}
+                          for r in diff_set]}})
 
     def check_no_transformers_in_sup_not_in_raw(self):
 
         raw_set = set([(r.i, r.j, r.ckt) for r in self.raw.get_transformers()])
-        sup_set = self.sup.get_transformer_ids()     #you will get a unique set
+        sup_set = self.sup.get_transformer_ids()  # you will get a unique set
         diff_set = sup_set.difference(raw_set)
         if len(diff_set) > 0:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'Please ensure that every transformer in the JSON SUP file is also in the RAW file. Also check that I/origin and J/destination designations are consistent across all data files.',
+                     'Please ensure that every transformer in the JSON SUP file is also in the RAW file. Also check that I/origin and J/destination designations are consistent across all data files.',
                  'diagnostics':
-                 {'num transformers sup not raw ': len(diff_set),
-                  'transformers': [
-                      {'i': r[0], 'j': r[1], 'id': r[2]}
-                      for r in diff_set]}})
+                     {'num transformers sup not raw ': len(diff_set),
+                      'transformers': [
+                          {'i': r[0], 'j': r[1], 'id': r[2]}
+                          for r in diff_set]}})
 
     def remove_transformers_in_sup_not_in_raw(self):
 
         raw_set = set([(r.i, r.j, r.ckt) for r in self.raw.get_transformers()])
-        sup_set = self.sup.get_transformer_ids()     #you will get a unique set
+        sup_set = self.sup.get_transformer_ids()  # you will get a unique set
         diff_set = sup_set.difference(raw_set)
         if len(diff_set) > 0:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'Removing transformers from the JSON SUP file that are not in the RAW file.',
+                     'Removing transformers from the JSON SUP file that are not in the RAW file.',
                  'diagnostics':
-                 {'num transformers sup not raw ': len(diff_set),
-                  'transformers': [
-                      {'i': r[0], 'j': r[1], 'id': r[2]}
-                      for r in diff_set]}})
+                     {'num transformers sup not raw ': len(diff_set),
+                      'transformers': [
+                          {'i': r[0], 'j': r[1], 'id': r[2]}
+                          for r in diff_set]}})
             self.sup.remove_transformers(diff_set)
 
     def check_no_transformers_in_raw_not_in_sup(self):
 
         raw_set = set([(r.i, r.j, r.ckt) for r in self.raw.get_transformers()])
-        sup_set = self.sup.get_transformer_ids()     #you will get a unique set
+        sup_set = self.sup.get_transformer_ids()  # you will get a unique set
         diff_set = raw_set.difference(sup_set)
         if len(diff_set) > 0:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'Please ensure that every transformer in the RAW file is also in the JSON SUP file. Also check that I/origin and J/destination designations are consistent across all data files.',
+                     'Please ensure that every transformer in the RAW file is also in the JSON SUP file. Also check that I/origin and J/destination designations are consistent across all data files.',
                  'diagnostics':
-                 {'num transformers raw not sup ': len(diff_set),
-                  'transformers': [
-                      {'i': r[0], 'j': r[1], 'id': r[2]}
-                      for r in diff_set]}})
+                     {'num transformers raw not sup ': len(diff_set),
+                      'transformers': [
+                          {'i': r[0], 'j': r[1], 'id': r[2]}
+                          for r in diff_set]}})
 
     def check_gen_costs(self):
 
-        #todo - find total pmax over all blocks
         # check it is >= g.pt + tol
         pass
 
     def check_load_costs(self):
 
-        #todo - find total pmax over all blocks
         # check it is >= r.pl*tmax + tol
         pass
-    
+
     def scrub_gen_costs(self):
 
         for g in self.raw.get_generators():
@@ -994,15 +1007,13 @@ class Data:
             g_id = g.id
             g_pt = g.pt
             g_pb = g.pb
-        #todo - find maximum marginal cost block
         # then set pmax on that block to g.pt + 1
 
     def scrub_load_costs(self):
-        
-        #todo - find maximum marginal cost block
+
         # then set pmax on that block to r.pl*tmax + 1
         pass
-        
+
     def check_no_generators_in_con_not_in_raw(self):
         '''check that no generators in the contingencies are not in the raw file.'''
 
@@ -1016,12 +1027,12 @@ class Data:
         for g in con_gens_not_raw_gens:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'generators mentioned in contingencies should exist in RAW file.',
+                     'generators mentioned in contingencies should exist in RAW file.',
                  'diagnostics':
-                 {'gen i': g[0],
-                  'gen id': g[1]}})
+                     {'gen i': g[0],
+                      'gen id': g[1]}})
 
     def check_no_branches_in_con_not_in_raw(self):
         '''check that no branches in the contingencies are not in the raw file.'''
@@ -1036,13 +1047,13 @@ class Data:
         for b in con_branches_not_raw_branches:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'branches mentioned in contingencies should exist in RAW file. Also check that I/origin and J/destination designations are consistent across all data files.',
+                     'branches mentioned in contingencies should exist in RAW file. Also check that I/origin and J/destination designations are consistent across all data files.',
                  'diagnostics':
-                 {'branch i': b[0],
-                  'branch j': b[1],
-                  'branch ckt': b[2]}})
+                     {'branch i': b[0],
+                      'branch j': b[1],
+                      'branch ckt': b[2]}})
 
     def check_no_offline_generators_in_contingencies(self):
         '''check that no generators that are offline in the base case
@@ -1053,10 +1064,10 @@ class Data:
         ctgs = self.con.get_contingencies()
         gen_ctgs = [c for c in ctgs if len(c.generator_out_events) > 0]
         gen_ctg_out_event_map = {
-            c:c.generator_out_events[0]
+            c: c.generator_out_events[0]
             for c in gen_ctgs}
         gen_ctg_gen_key_ctg_map = {
-            (v.i, v.id):k
+            (v.i, v.id): k
             for k, v in gen_ctg_out_event_map.items()}
         offline_gens_outaged_in_ctgs_keys = set(offline_gen_keys) & set(gen_ctg_gen_key_ctg_map.keys())
         for g in offline_gens_outaged_in_ctgs_keys:
@@ -1064,16 +1075,16 @@ class Data:
             ctg = gen_ctg_gen_key_ctg_map[g]
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'Please ensure that every generator that goes out of service in a contingency is in service in the base case, i.e. has stat=1.',
+                     'Please ensure that every generator that goes out of service in a contingency is in service in the base case, i.e. has stat=1.',
                  'diagnostics':
-                 {'gen i': gen.i,
-                  'gen id': gen.id,
-                  'gen stat': gen.stat,
-                  'ctg label': ctg.label,
-                  'ctg gen event i': ctg.generator_out_events[0].i,
-                  'ctg gen event id': ctg.generator_out_events[0].id}})
+                     {'gen i': gen.i,
+                      'gen id': gen.id,
+                      'gen stat': gen.stat,
+                      'ctg label': ctg.label,
+                      'ctg gen event i': ctg.generator_out_events[0].i,
+                      'ctg gen event id': ctg.generator_out_events[0].id}})
 
     def remove_contingencies_with_generators_not_in_raw(self):
         '''remove any contingencies where a generator that is not
@@ -1085,25 +1096,25 @@ class Data:
         ctgs = self.con.get_contingencies()
         gen_ctgs = [c for c in ctgs if len(c.generator_out_events) > 0]
         gen_ctg_gen_key_map = {
-            c:(c.generator_out_events[0].i, c.generator_out_events[0].id)
+            c: (c.generator_out_events[0].i, c.generator_out_events[0].id)
             for c in gen_ctgs}
         gen_ctg_gens_key = list(set(gen_ctg_gen_key_map.values()))
         gens_key_missing = list(set(gen_ctg_gens_key).difference(set(gens_key)))
         num_gens = len(gens_key)
         num_gens_missing = len(gens_key_missing)
-        gens_dict = {gens_key[i]:i for i in range(num_gens)}
-        gens_missing_dict = {gens_key_missing[i]:(num_gens + i) for i in range(num_gens_missing)}
-        gens_dict.update(gens_missing_dict)      
+        gens_dict = {gens_key[i]: i for i in range(num_gens)}
+        gens_missing_dict = {gens_key_missing[i]: (num_gens + i) for i in range(num_gens_missing)}
+        gens_dict.update(gens_missing_dict)
         ctgs_to_remove = [c for c in gen_ctgs if gens_dict[gen_ctg_gen_key_map[c]] >= num_gens]
         ctgs_label_to_remove = [c.label for c in ctgs_to_remove]
         for k in ctgs_label_to_remove:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'removing generator contingency where the generator does not exist in the RAW file',
+                     'removing generator contingency where the generator does not exist in the RAW file',
                  'diagnostics':
-                 {'ctg label': k}})
+                     {'ctg label': k}})
             del self.con.contingencies[k]
 
     def remove_contingencies_with_branches_not_in_raw(self):
@@ -1117,27 +1128,27 @@ class Data:
         ctgs = self.con.get_contingencies()
         branch_ctgs = [c for c in ctgs if len(c.branch_out_events) > 0]
         branch_ctg_branch_key_map = {
-            c:(c.branch_out_events[0].i, c.branch_out_events[0].j, c.branch_out_events[0].ckt)
+            c: (c.branch_out_events[0].i, c.branch_out_events[0].j, c.branch_out_events[0].ckt)
             for c in branch_ctgs}
         branch_ctg_branches_key = list(set(branch_ctg_branch_key_map.values()))
         branches_key_missing = list(set(branch_ctg_branches_key).difference(set(branches_key)))
         num_branches = len(branches_key)
         num_branches_missing = len(branches_key_missing)
-        branches_dict = {branches_key[i]:i for i in range(num_branches)}
-        branches_missing_dict = {branches_key_missing[i]:(num_branches + i) for i in range(num_branches_missing)}
-        branches_dict.update(branches_missing_dict)      
+        branches_dict = {branches_key[i]: i for i in range(num_branches)}
+        branches_missing_dict = {branches_key_missing[i]: (num_branches + i) for i in range(num_branches_missing)}
+        branches_dict.update(branches_missing_dict)
         ctgs_to_remove = [c for c in branch_ctgs if branches_dict[branch_ctg_branch_key_map[c]] >= num_branches]
         ctgs_label_to_remove = [c.label for c in ctgs_to_remove]
         for k in ctgs_label_to_remove:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'removing branch contingency where the branch does not exist in the RAW file',
+                     'removing branch contingency where the branch does not exist in the RAW file',
                  'diagnostics':
-                 {'ctg label': k}})
+                     {'ctg label': k}})
             del self.con.contingencies[k]
-            
+
     def remove_contingencies_with_offline_generators(self):
         '''remove any contingencies where a generator that is offline in
         the base case is going out of service'''
@@ -1148,25 +1159,24 @@ class Data:
         ctgs = self.con.get_contingencies()
         gen_ctgs = [c for c in ctgs if len(c.generator_out_events) > 0]
         gen_ctg_out_event_map = {
-            c:c.generator_out_events[0]
+            c: c.generator_out_events[0]
             for c in gen_ctgs}
         gen_ctg_gen_key_ctg_map = {
-            (v.i, v.id):k
+            (v.i, v.id): k
             for k, v in gen_ctg_out_event_map.items()}
         offline_gens_outaged_in_ctgs_keys = set(offline_gen_keys) & set(gen_ctg_gen_key_ctg_map.keys())
         ctgs_label_to_remove = list(set(
             [gen_ctg_gen_key_ctg_map[g].label
              for g in offline_gens_outaged_in_ctgs_keys]))
 
-
         for k in ctgs_label_to_remove:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'removing generator contingency where the generator is out of service in the base case',
+                     'removing generator contingency where the generator is out of service in the base case',
                  'diagnostics':
-                 {'ctg label': k}})
+                     {'ctg label': k}})
             del self.con.contingencies[k]
 
     def check_no_offline_lines_in_contingencies(self):
@@ -1178,10 +1188,10 @@ class Data:
         ctgs = self.con.get_contingencies()
         branch_ctgs = [c for c in ctgs if len(c.branch_out_events) > 0]
         branch_ctg_out_event_map = {
-            c:c.branch_out_events[0]
+            c: c.branch_out_events[0]
             for c in branch_ctgs}
         branch_ctg_branch_key_ctg_map = {
-            (v.i, v.j, v.ckt):k
+            (v.i, v.j, v.ckt): k
             for k, v in branch_ctg_out_event_map.items()}
         offline_lines_outaged_in_ctgs_keys = set(offline_line_keys) & set(branch_ctg_branch_key_ctg_map.keys())
         for g in offline_lines_outaged_in_ctgs_keys:
@@ -1189,18 +1199,18 @@ class Data:
             ctg = branch_ctg_branch_key_ctg_map[g]
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'Please ensure that every line (nontransformer branch) that goes out of service in a contingency is in service in the base case, i.e. has st=1.',
+                     'Please ensure that every line (nontransformer branch) that goes out of service in a contingency is in service in the base case, i.e. has st=1.',
                  'diagnostics':
-                 {'line i': line.i,
-                  'line j': line.j,
-                  'line ckt': line.ckt,
-                  'line st': line.st,
-                  'ctg label': ctg.label,
-                  'ctg branch event i': ctg.branch_out_events[0].i,
-                  'ctg branch event j': ctg.branch_out_events[0].j,
-                  'ctg branch event ckt': ctg.branch_out_events[0].ckt}})
+                     {'line i': line.i,
+                      'line j': line.j,
+                      'line ckt': line.ckt,
+                      'line st': line.st,
+                      'ctg label': ctg.label,
+                      'ctg branch event i': ctg.branch_out_events[0].i,
+                      'ctg branch event j': ctg.branch_out_events[0].j,
+                      'ctg branch event ckt': ctg.branch_out_events[0].ckt}})
 
     def remove_contingencies_with_offline_lines(self):
         '''remove any contingencies where a line that is offline in
@@ -1212,10 +1222,10 @@ class Data:
         ctgs = self.con.get_contingencies()
         branch_ctgs = [c for c in ctgs if len(c.branch_out_events) > 0]
         branch_ctg_out_event_map = {
-            c:c.branch_out_events[0]
+            c: c.branch_out_events[0]
             for c in branch_ctgs}
         branch_ctg_branch_key_ctg_map = {
-            (v.i, v.j, v.ckt):k
+            (v.i, v.j, v.ckt): k
             for k, v in branch_ctg_out_event_map.items()}
         offline_lines_outaged_in_ctgs_keys = set(offline_line_keys) & set(branch_ctg_branch_key_ctg_map.keys())
         ctgs_label_to_remove = list(set(
@@ -1224,11 +1234,11 @@ class Data:
         for k in ctgs_label_to_remove:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'removing line contingency where the line is out of service in the base case',
+                     'removing line contingency where the line is out of service in the base case',
                  'diagnostics':
-                 {'ctg label': k}})
+                     {'ctg label': k}})
             del self.con.contingencies[k]
 
     def check_no_offline_transformers_in_contingencies(self):
@@ -1240,29 +1250,30 @@ class Data:
         ctgs = self.con.get_contingencies()
         branch_ctgs = [c for c in ctgs if len(c.branch_out_events) > 0]
         branch_ctg_out_event_map = {
-            c:c.branch_out_events[0]
+            c: c.branch_out_events[0]
             for c in branch_ctgs}
         branch_ctg_branch_key_ctg_map = {
-            (v.i, v.j, v.ckt):k
+            (v.i, v.j, v.ckt): k
             for k, v in branch_ctg_out_event_map.items()}
-        offline_transformers_outaged_in_ctgs_keys = set(offline_transformer_keys) & set(branch_ctg_branch_key_ctg_map.keys())
+        offline_transformers_outaged_in_ctgs_keys = set(offline_transformer_keys) & set(
+            branch_ctg_branch_key_ctg_map.keys())
         for g in offline_transformers_outaged_in_ctgs_keys:
             transformer = self.raw.transformers[g]
             ctg = branch_ctg_branch_key_ctg_map[g]
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'Please ensure that every transformer that goes out of service in a contingency is in service in the base case, i.e. has stat=1.',
+                     'Please ensure that every transformer that goes out of service in a contingency is in service in the base case, i.e. has stat=1.',
                  'diagnostics':
-                 {'transformer i': transformer.i,
-                  'transformer j': transformer.j,
-                  'transformer ckt': transformer.ckt,
-                  'transformer stat': transformer.stat,
-                  'ctg label': ctg.label,
-                  'ctg branch event i': ctg.branch_out_events[0].i,
-                  'ctg branch event j': ctg.branch_out_events[0].j,
-                  'ctg branch event ckt': ctg.branch_out_events[0].ckt}})
+                     {'transformer i': transformer.i,
+                      'transformer j': transformer.j,
+                      'transformer ckt': transformer.ckt,
+                      'transformer stat': transformer.stat,
+                      'ctg label': ctg.label,
+                      'ctg branch event i': ctg.branch_out_events[0].i,
+                      'ctg branch event j': ctg.branch_out_events[0].j,
+                      'ctg branch event ckt': ctg.branch_out_events[0].ckt}})
 
     def remove_contingencies_with_offline_transformers(self):
         '''remove any contingencies where a transformer that is offline in
@@ -1274,24 +1285,26 @@ class Data:
         ctgs = self.con.get_contingencies()
         branch_ctgs = [c for c in ctgs if len(c.branch_out_events) > 0]
         branch_ctg_out_event_map = {
-            c:c.branch_out_events[0]
+            c: c.branch_out_events[0]
             for c in branch_ctgs}
         branch_ctg_branch_key_ctg_map = {
-            (v.i, v.j, v.ckt):k
+            (v.i, v.j, v.ckt): k
             for k, v in branch_ctg_out_event_map.items()}
-        offline_transformers_outaged_in_ctgs_keys = set(offline_transformer_keys) & set(branch_ctg_branch_key_ctg_map.keys())
+        offline_transformers_outaged_in_ctgs_keys = set(offline_transformer_keys) & set(
+            branch_ctg_branch_key_ctg_map.keys())
         ctgs_label_to_remove = list(set(
             [branch_ctg_branch_key_ctg_map[g].label
              for g in offline_transformers_outaged_in_ctgs_keys]))
         for k in ctgs_label_to_remove:
             alert(
                 {'data_type':
-                 'Data',
+                     'Data',
                  'error_message':
-                 'removing transformer contingency where the transformer is out of service in the base case',
+                     'removing transformer contingency where the transformer is out of service in the base case',
                  'diagnostics':
-                 {'ctg label': k}})
+                     {'ctg label': k}})
             del self.con.contingencies[k]
+
 
 class Raw:
     '''In physical units, i.e. data convention, i.e. input and output data files'''
@@ -1310,7 +1323,7 @@ class Raw:
         self.switched_shunts = {}
 
         self.num_loads_active = 0
-        #self.num_swshs_active = 0      #not needed for reading solution file
+        # self.num_swshs_active = 0      #not needed for reading solution file
 
     def scrub(self):
 
@@ -1331,9 +1344,9 @@ class Raw:
         self.check_fixed_shunts()
         self.check_generators()
         self.check_nontransformer_branches()
-        self.check_transformer_impedance_correction_tables(scrub_mode=False) # need to do this before transformers
+        self.check_transformer_impedance_correction_tables(scrub_mode=False)  # need to do this before transformers
         self.check_transformers()
-        #self.check_areas()
+        # self.check_areas()
         self.check_switched_shunts()
         self.check_unique_branch_per_i_j_ckt()
         # todo: check buses > 0, bus fields of loads, fixed shunts, generators, nontransformer branches, transformers, areas, switched shunts are in the set of buses
@@ -1382,7 +1395,7 @@ class Raw:
         buses_id = set([r.i for r in buses])
         components = self.get_nontransformer_branches()
         component_buses_id = set([r.i for r in components] + [r.j for r in components])
-        bus_id_component_map = {i:[] for i in component_buses_id.union(buses_id)}
+        bus_id_component_map = {i: [] for i in component_buses_id.union(buses_id)}
         for r in components:
             bus_id_component_map[r.i].append(r)
             bus_id_component_map[r.j].append(r)
@@ -1391,7 +1404,8 @@ class Raw:
             r for i in buses_id_to_remove
             for r in bus_id_component_map[i]]
         components_to_remove_key = sorted(
-            list(set([(r.i, r.j, r.ckt) for r in components_to_remove]))) # use set to prevent deleting the same branch twice if both fbus and tbus are out.
+            list(set([(r.i, r.j, r.ckt) for r in
+                      components_to_remove])))  # use set to prevent deleting the same branch twice if both fbus and tbus are out.
         for k in components_to_remove_key:
             alert(
                 {'data_type':
@@ -1426,7 +1440,7 @@ class Raw:
         xfmrs = self.get_transformers()
         xfmrs = [r for r in xfmrs if r.tab1 != 0]
         tab1 = sorted(list(set([r.tab1 for r in xfmrs])))
-        tab1_xfmr_map = {t:[] for t in tab1}
+        tab1_xfmr_map = {t: [] for t in tab1}
         for r in xfmrs:
             tab1_xfmr_map[r.tab1].append(r)
         tict_keys = self.transformer_impedance_correction_tables.keys()
@@ -1457,10 +1471,11 @@ class Raw:
         rad_tol = pu_tol
         deg_tol = 180.0 / math.pi * rad_tol
         for r in self.get_transformers():
-            if r.tab1 > 0 and (r.tab1 in self.transformer_impedance_correction_tables.keys()) and r.cod1 in [-3, -1, 1, 3]:
+            if r.tab1 > 0 and (r.tab1 in self.transformer_impedance_correction_tables.keys()) and r.cod1 in [-3, -1, 1,
+                                                                                                             3]:
                 tict = self.transformer_impedance_correction_tables[r.tab1]
                 n = tict.tict_point_count
-                assert(n >= 2)
+                assert (n >= 2)
                 tmax = tict.t[n - 1]
                 tmin = tict.t[0]
                 tol = pu_tol if r.cod1 in [-1, 1] else deg_tol
@@ -1470,9 +1485,10 @@ class Raw:
                              'Raw',
                          'error_message':
                              'found transformer with impedance correction table not covering control range. {}'.format(
-                                'adjusting impedance correction table' if scrub_mode else 'scrubber will adjust correction table'),
+                                 'adjusting impedance correction table' if scrub_mode else 'scrubber will adjust correction table'),
                          'diagnostics':
-                             {'i': r.i, 'j': r.j, 'ckt': r.ckt, 'cod1': r.cod1, 'tab1': r.tab1, 'rma1': r.rma1, 'rmi1': r.rmi1,
+                             {'i': r.i, 'j': r.j, 'ckt': r.ckt, 'cod1': r.cod1, 'tab1': r.tab1, 'rma1': r.rma1,
+                              'rmi1': r.rmi1,
                               'tmax': tmax, 'tmin': tmin, 'pu_tol': pu_tol, 'tol': tol, 'tol_adjust': adjust}})
                     if scrub_mode:
                         if not (r.rma1 + tol + adjust < tmax):
@@ -1489,7 +1505,7 @@ class Raw:
         buses_id = set([r.i for r in buses])
         components = self.get_transformers()
         component_buses_id = set([r.i for r in components] + [r.j for r in components])
-        bus_id_component_map = {i:[] for i in component_buses_id.union(buses_id)}
+        bus_id_component_map = {i: [] for i in component_buses_id.union(buses_id)}
         for r in components:
             bus_id_component_map[r.i].append(r)
             bus_id_component_map[r.j].append(r)
@@ -1498,7 +1514,8 @@ class Raw:
             r for i in buses_id_to_remove
             for r in bus_id_component_map[i]]
         components_to_remove_key = sorted(
-            list(set([(r.i, r.j, r.ckt) for r in components_to_remove]))) # use set to prevent deleting the same branch twice if both fbus and tbus are out.
+            list(set([(r.i, r.j, r.ckt) for r in
+                      components_to_remove])))  # use set to prevent deleting the same branch twice if both fbus and tbus are out.
         for k in components_to_remove_key:
             alert(
                 {'data_type':
@@ -1511,7 +1528,7 @@ class Raw:
                 del self.transformers[k]
 
     def check_case_identification(self):
-        
+
         self.case_identification.check()
 
     def check_buses(self):
@@ -1569,7 +1586,7 @@ class Raw:
         buses_id = set([r.i for r in buses])
         components = self.get_loads()
         component_buses_id = set([r.i for r in components])
-        bus_id_component_map = {i:[] for i in component_buses_id.union(buses_id)}
+        bus_id_component_map = {i: [] for i in component_buses_id.union(buses_id)}
         for r in components:
             bus_id_component_map[r.i].append(r)
         buses_id_to_remove = component_buses_id.difference(buses_id)
@@ -1601,7 +1618,7 @@ class Raw:
         buses_id = set([r.i for r in buses])
         components = self.get_fixed_shunts()
         component_buses_id = set([r.i for r in components])
-        bus_id_component_map = {i:[] for i in component_buses_id.union(buses_id)}
+        bus_id_component_map = {i: [] for i in component_buses_id.union(buses_id)}
         for r in components:
             bus_id_component_map[r.i].append(r)
         buses_id_to_remove = component_buses_id.difference(buses_id)
@@ -1645,7 +1662,7 @@ class Raw:
         buses_id = set([r.i for r in buses])
         components = self.get_generators()
         component_buses_id = set([r.i for r in components])
-        bus_id_component_map = {i:[] for i in component_buses_id.union(buses_id)}
+        bus_id_component_map = {i: [] for i in component_buses_id.union(buses_id)}
         for r in components:
             bus_id_component_map[r.i].append(r)
         buses_id_to_remove = component_buses_id.difference(buses_id)
@@ -1690,12 +1707,12 @@ class Raw:
 
     def check_switched_shunts_bus_exists(self, scrub_mode=False):
 
-        #print('here')
+        # print('here')
         buses = self.get_buses()
         buses_id = set([r.i for r in buses])
         components = self.get_switched_shunts()
         component_buses_id = set([r.i for r in components])
-        bus_id_component_map = {i:[] for i in component_buses_id.union(buses_id)}
+        bus_id_component_map = {i: [] for i in component_buses_id.union(buses_id)}
         for r in components:
             bus_id_component_map[r.i].append(r)
         buses_id_to_remove = component_buses_id.difference(buses_id)
@@ -1719,9 +1736,8 @@ class Raw:
     def check_switched_shunts_binit_feas(self, scrub_mode=False):
 
         swsh = [r for r in self.get_switched_shunts()]
-        #swsh = swsh[:num_swsh_to_test] # todo remove this line
-        #r0 = swsh[num_swsh_to_test - 1]
-        #print(
+        # r0 = swsh[num_swsh_to_test - 1]
+        # print(
         #    'swsh check i: {}, binit: {}, n: [{}, {}, {}, {}, {}, {}, {}, {}], b: [{}, {}, {}, {}, {}, {}, {}, {}]'.format(
         #        r0.i, r0.binit,
         #        r0.n1, r0.n2, r0.n3, r0.n4, r0.n5, r0.n6, r0.n7, r0.n8,
@@ -1752,7 +1768,7 @@ class Raw:
                 if do_fix_swsh_binit:
                     print('scrubbing all swsh binit values')
                     swsh_solve(btar, n, b, x, br, br_abs, swsh_solve_tol)
-                    #br = btar - bnew
+                    # br = btar - bnew
                     bnew = btar - br
                     for index in range(len(swsh)):
                         swsh[index].binit = bnew[index]
@@ -1789,14 +1805,12 @@ class Raw:
         # there are no other lines or transformers with key (i,j,ckt)
         # or (j,i,ckt)
 
-          
-
         branch_to_normalized_id_map = {
             r: ((r.i, r.j, r.ckt) if r.i < r.j else (r.j, r.i, r.ckt))
-            for r in 
-                     list(self.nontransformer_branches.values()) + list(self.transformers.values())   }
+            for r in
+            list(self.nontransformer_branches.values()) + list(self.transformers.values())}
         normalized_ids = list(set(branch_to_normalized_id_map.values()))
-        normalized_id_num_branches = {i:0 for i in normalized_ids}
+        normalized_id_num_branches = {i: 0 for i in normalized_ids}
         for k, v in branch_to_normalized_id_map.items():
             normalized_id_num_branches[v] += 1
         for i in normalized_ids:
@@ -1805,14 +1819,16 @@ class Raw:
                     {'data_type': 'Raw',
                      'error_message': 'Please ensure that for any line or transformer (i,j,ckt) there are no other lines or transformers with key (i,j,ckt) or (j,i,ckt)',
                      'diagnostics': {'branch key': i, 'num branches': normalized_id_num_branches[i]}})
-            
+
     def set_areas_from_buses(self):
-        
+
         area_i_set = set([b.area for b in self.buses.values()])
+
         def area_set_i(area, i):
             area.i = i
             return area
-        self.areas = {i:area_set_i(Area(), i) for i in area_i_set}
+
+        self.areas = {i: area_set_i(Area(), i) for i in area_i_set}
 
     def get_buses(self):
 
@@ -1845,28 +1861,28 @@ class Raw:
     def get_transformer_impedance_correction_tables(self):
 
         return sorted(self.transformer_impedance_correction_tables.values(), key=(lambda r: r.i))
-    
+
     def get_switched_shunts(self):
 
         return sorted(self.switched_shunts.values(), key=(lambda r: r.i))
 
     def construct_case_identification_section(self):
 
-        #out_str = StringIO.StringIO()
+        # out_str = StringIO.StringIO()
         out_str = StringIO()
-        #writer = csv.writer(out_str, lineterminator="\n", quotechar="'", quoting=csv.QUOTE_NONNUMERIC)
+        # writer = csv.writer(out_str, lineterminator="\n", quotechar="'", quoting=csv.QUOTE_NONNUMERIC)
         writer = csv.writer(out_str, lineterminator="\n", quoting=csv.QUOTE_NONE)
         if write_values_in_unused_fields:
             rows = [
                 [self.case_identification.ic, self.case_identification.sbase,
                  self.case_identification.rev, self.case_identification.xfrrat,
                  self.case_identification.nxfrat, self.case_identification.basfrq],
-                ["%s" % self.case_identification.record_2], # no quotes here - typical RAW file
+                ["%s" % self.case_identification.record_2],  # no quotes here - typical RAW file
                 ["%s" % self.case_identification.record_3]]
-                #["'%s'" % self.case_identification.record_2],
-                #["'%s'" % self.case_identification.record_3]]
-                #["''"],
-                #["''"]]
+            # ["'%s'" % self.case_identification.record_2],
+            # ["'%s'" % self.case_identification.record_3]]
+            # ["''"],
+            # ["''"]]
         elif write_defaults_in_unused_fields:
             rows = [
                 [0, self.case_identification.sbase, 33, 0, 1, 60.0],
@@ -1886,11 +1902,12 @@ class Raw:
 
         out_str = StringIO()
         writer = csv.writer(out_str, lineterminator="\n", quoting=csv.QUOTE_NONE, escapechar="\\")
-        
+
         if write_values_in_unused_fields:
             rows = [
-                [r.i, "'%s'" % r.name, r.baskv, r.ide, r.area, r.zone, r.owner, r.vm, r.va, r.nvhi, r.nvlo, r.evhi, r.evlo]
-                #for r in self.buses.values()] # might as well sort
+                [r.i, "'%s'" % r.name, r.baskv, r.ide, r.area, r.zone, r.owner, r.vm, r.va, r.nvhi, r.nvlo, r.evhi,
+                 r.evlo]
+                # for r in self.buses.values()] # might as well sort
                 for r in self.get_buses()]
         elif write_defaults_in_unused_fields:
             rows = [
@@ -1915,8 +1932,8 @@ class Raw:
         writer.writerows(rows)
 
         writer = csv.writer(out_str, lineterminator="\n", quoting=csv.QUOTE_NONE)
-        writer.writerows([['0 / END OF BUS DATA BEGIN LOAD DATA']]) # no comma allowed without escape character
-        #out_str.write('0 / END OF BUS DATA, BEGIN LOAD DATA\n')
+        writer.writerows([['0 / END OF BUS DATA BEGIN LOAD DATA']])  # no comma allowed without escape character
+        # out_str.write('0 / END OF BUS DATA, BEGIN LOAD DATA\n')
         return out_str.getvalue()
 
     def construct_load_section(self):
@@ -1925,7 +1942,8 @@ class Raw:
         writer = csv.writer(out_str, lineterminator="\n", quoting=csv.QUOTE_NONE)
         if write_values_in_unused_fields:
             rows = [
-                [r.i, "'%s'" % r.id, r.status, r.area, r.zone, r.pl, r.ql, r.ip, r.iq, r.yp, r.yq, r.owner, r.scale, r.intrpt]
+                [r.i, "'%s'" % r.id, r.status, r.area, r.zone, r.pl, r.ql, r.ip, r.iq, r.yp, r.yq, r.owner, r.scale,
+                 r.intrpt]
                 for r in self.get_loads()]
         elif write_defaults_in_unused_fields:
             rows = [
@@ -1999,19 +2017,19 @@ class Raw:
             rows = [
                 [r.i, r.j, "'%s'" % r.ckt, r.r, r.x, r.b, r.ratea,
                  r.rateb, r.ratec, r.gi, r.bi, r.gj, r.bj, r.st, r.met, r.len,
-                 r.o1, r.f1, r.o2, r.f2, r.o3, r.f3, r.o4, r.f4 ]
+                 r.o1, r.f1, r.o2, r.f2, r.o3, r.f3, r.o4, r.f4]
                 for r in self.get_nontransformer_branches()]
         elif write_defaults_in_unused_fields:
             rows = [
                 [r.i, r.j, "'%s'" % r.ckt, r.r, r.x, r.b, r.ratea,
                  0.0, r.ratec, 0.0, 0.0, 0.0, 0.0, r.st, 1, 0.0,
-                 1, 1.0, 0, 1.0, 0, 1.0, 0, 1.0 ]
+                 1, 1.0, 0, 1.0, 0, 1.0, 0, 1.0]
                 for r in self.get_nontransformer_branches()]
         else:
             rows = [
                 [r.i, r.j, "'%s'" % r.ckt, r.r, r.x, r.b, r.ratea,
                  None, r.ratec, None, None, None, None, r.st, None, None,
-                 None, None, None, None, None, None, None, None ]
+                 None, None, None, None, None, None, None, None]
                 for r in self.get_nontransformer_branches()]
         writer.writerows(rows)
         writer = csv.writer(out_str, lineterminator="\n", quoting=csv.QUOTE_NONE)
@@ -2027,40 +2045,40 @@ class Raw:
                 rr
                 for r in self.get_transformers()
                 for rr in [
-                        [r.i, r.j, r.k, "'%s'" % r.ckt, r.cw, r.cz, r.cm,
-                         r.mag1, r.mag2, r.nmetr, "'%s'" % r.name, r.stat, r.o1, r.f1,
-                         r.o2, r.f2, r.o3, r.f3, r.o4, r.f4, "'%s'" % r.vecgrp],
-                        [r.r12, r.x12, r.sbase12],
-                        [r.windv1, r.nomv1, r.ang1, r.rata1, r.ratb1, r.ratc1,
-                         r.cod1, r.cont1, r.rma1, r.rmi1, r.vma1, r.vmi1, r.ntp1, r.tab1,
-                         r.cr1, r.cx1, r.cnxa1],
-                        [r.windv2, r.nomv2]]]
+                    [r.i, r.j, r.k, "'%s'" % r.ckt, r.cw, r.cz, r.cm,
+                     r.mag1, r.mag2, r.nmetr, "'%s'" % r.name, r.stat, r.o1, r.f1,
+                     r.o2, r.f2, r.o3, r.f3, r.o4, r.f4, "'%s'" % r.vecgrp],
+                    [r.r12, r.x12, r.sbase12],
+                    [r.windv1, r.nomv1, r.ang1, r.rata1, r.ratb1, r.ratc1,
+                     r.cod1, r.cont1, r.rma1, r.rmi1, r.vma1, r.vmi1, r.ntp1, r.tab1,
+                     r.cr1, r.cx1, r.cnxa1],
+                    [r.windv2, r.nomv2]]]
         elif write_defaults_in_unused_fields:
             rows = [
                 rr
                 for r in self.get_transformers()
                 for rr in [
-                        [r.i, r.j, 0, "'%s'" % r.ckt, 1, 1, 1,
-                         r.mag1, r.mag2, 2, "'            '", r.stat, 1, 1.0,
-                         0, 1.0, 0, 1.0, 0, 1.0, "'            '"],
-                        [r.r12, r.x12, self.case_identification.sbase],
-                        [r.windv1, 0.0, r.ang1, r.rata1, 0.0, r.ratc1,
-                         r.cod1, 0, r.rma1, r.rmi1, 1.1, 0.9, r.ntp1, r.tab1,
-                         0.0, 0.0, 0.0],
-                        [r.windv2, 0.0]]]
+                    [r.i, r.j, 0, "'%s'" % r.ckt, 1, 1, 1,
+                     r.mag1, r.mag2, 2, "'            '", r.stat, 1, 1.0,
+                     0, 1.0, 0, 1.0, 0, 1.0, "'            '"],
+                    [r.r12, r.x12, self.case_identification.sbase],
+                    [r.windv1, 0.0, r.ang1, r.rata1, 0.0, r.ratc1,
+                     r.cod1, 0, r.rma1, r.rmi1, 1.1, 0.9, r.ntp1, r.tab1,
+                     0.0, 0.0, 0.0],
+                    [r.windv2, 0.0]]]
         else:
             rows = [
                 rr
                 for r in self.get_transformers()
                 for rr in [
-                        [r.i, r.j, 0, "'%s'" % r.ckt, None, None, None,
-                         r.mag1, r.mag2, None, None, r.stat, None, None,
-                         None, None, None, None, None, None, None],
-                        [r.r12, r.x12, None],
-                        [r.windv1, None, r.ang1, r.rata1, None, r.ratc1,
-                         r.cod1, None, r.rma1, r.rmi1, None, None, r.ntp1, r.tab1,
-                         None, None, None],
-                        [r.windv2, None]]]
+                    [r.i, r.j, 0, "'%s'" % r.ckt, None, None, None,
+                     r.mag1, r.mag2, None, None, r.stat, None, None,
+                     None, None, None, None, None, None, None],
+                    [r.r12, r.x12, None],
+                    [r.windv1, None, r.ang1, r.rata1, None, r.ratc1,
+                     r.cod1, None, r.rma1, r.rmi1, None, None, r.ntp1, r.tab1,
+                     None, None, None],
+                    [r.windv2, None]]]
         writer.writerows(rows)
         writer = csv.writer(out_str, lineterminator="\n", quoting=csv.QUOTE_NONE)
         writer.writerows([['0 / END OF TRANSFORMER DATA BEGIN AREA DATA']])
@@ -2114,13 +2132,13 @@ class Raw:
         rows = [
             [r.i, r.t1, r.f1, r.t2, r.f2, r.t3, r.f3, r.t4, r.f4, r.t5, r.f5,
              r.t6, r.f6, r.t7, r.f7, r.t8, r.f8, r.t9, r.f9, r.t10, r.f10,
-             r.t11, r.f11][0:(2*r.tict_point_count + 1)]
+             r.t11, r.f11][0:(2 * r.tict_point_count + 1)]
             for r in self.get_transformer_impedance_correction_tables()]
         writer.writerows(rows)
         writer = csv.writer(out_str, lineterminator="\n", quoting=csv.QUOTE_NONE)
         writer.writerows([['0 / END OF IMPEDANCE CORRECTION DATA BEGIN MULTI-TERMINAL DC DATA']])
         return out_str.getvalue()
-    
+
     def construct_multi_terminal_dc_section(self):
 
         out_str = StringIO()
@@ -2170,17 +2188,20 @@ class Raw:
         if write_values_in_unused_fields:
             rows = [
                 [r.i, r.modsw, r.adjm, r.stat, r.vswhi, r.vswlo, r.swrem, r.rmpct, "'%s'" % r.rmidnt, r.binit] +
-                [r.n1, r.b1, r.n2, r.b2, r.n3, r.b3, r.n4, r.b4, r.n5, r.b5, r.n6, r.b6, r.n7, r.b7, r.n8, r.b8][0:(2*r.swsh_susc_count)]
+                [r.n1, r.b1, r.n2, r.b2, r.n3, r.b3, r.n4, r.b4, r.n5, r.b5, r.n6, r.b6, r.n7, r.b7, r.n8, r.b8][
+                0:(2 * r.swsh_susc_count)]
                 for r in self.get_switched_shunts()]
         elif write_defaults_in_unused_fields:
             rows = [
                 [r.i, 1, 0, r.stat, 1.0, 1.0, 0, 100.0, "'            '", r.binit] +
-                [r.n1, r.b1, r.n2, r.b2, r.n3, r.b3, r.n4, r.b4, r.n5, r.b5, r.n6, r.b6, r.n7, r.b7, r.n8, r.b8][0:(2*r.swsh_susc_count)]
+                [r.n1, r.b1, r.n2, r.b2, r.n3, r.b3, r.n4, r.b4, r.n5, r.b5, r.n6, r.b6, r.n7, r.b7, r.n8, r.b8][
+                0:(2 * r.swsh_susc_count)]
                 for r in self.get_switched_shunts()]
         else:
             rows = [
                 [r.i, None, None, r.stat, None, None, None, None, None, r.binit] +
-                [r.n1, r.b1, r.n2, r.b2, r.n3, r.b3, r.n4, r.b4, r.n5, r.b5, r.n6, r.b6, r.n7, r.b7, r.n8, r.b8][0:(2*r.swsh_susc_count)]
+                [r.n1, r.b1, r.n2, r.b2, r.n3, r.b3, r.n4, r.b4, r.n5, r.b5, r.n6, r.b6, r.n7, r.b7, r.n8, r.b8][
+                0:(2 * r.swsh_susc_count)]
                 for r in self.get_switched_shunts()]
         writer.writerows(rows)
         writer = csv.writer(out_str, lineterminator="\n", quoting=csv.QUOTE_NONE)
@@ -2236,7 +2257,7 @@ class Raw:
             out_file.write(self.construct_gne_section())
             out_file.write(self.construct_induction_section())
             out_file.write(self.construct_q_record())
-        
+
     def set_operating_point_to_offline_solution(self):
 
         for r in self.buses.values():
@@ -2247,14 +2268,14 @@ class Raw:
             r.qg = 0.0
         for r in self.switched_shunts.values():
             r.binit = 0.0
-        
+
     def read(self, file_name):
 
         lines = []
         for line in open(file_name, 'r'):
-            if line.startswith('@!')==False and "=" not in line and "RATING" not in line:
+            if line.startswith('@!') == False and "=" not in line and "RATING" not in line:
                 lines.append(line)
-            #lines = in_file.readlines()
+            # lines = in_file.readlines()
         delimiter_str = ","
         quote_str = "'"
         skip_initial_space = True
@@ -2266,23 +2287,23 @@ class Raw:
         rows = [[t.strip() for t in r] for r in rows]
         self.read_from_rows(rows)
         self.set_areas_from_buses()
-        
+
     def row_is_file_end(self, row):
 
         is_file_end = False
         if len(row) == 0:
             is_file_end = True
-        if row[0][:1] in {'','q','Q'}:
+        if row[0][:1] in {'', 'q', 'Q'}:
             is_file_end = True
         return is_file_end
-    
+
     def row_is_section_end(self, row):
 
         is_section_end = False
         if row[0][:1] == '0':
             is_section_end = True
         return is_section_end
-        
+
     def read_from_rows(self, rows):
 
         # todo: check for duplicate keys
@@ -2314,7 +2335,8 @@ class Raw:
             alert(
                 {'data_type': 'Raw',
                  'error_message': 'repeated key in RAW file section: %s' % 'Bus',
-                 'diagnostics': {'records': section_num_records, 'distinct keys': len(self.buses), 'repeated keys': repeated_keys}})
+                 'diagnostics': {'records': section_num_records, 'distinct keys': len(self.buses),
+                                 'repeated keys': repeated_keys}})
 
         # load section
         section_num_records = 0
@@ -2336,7 +2358,8 @@ class Raw:
             alert(
                 {'data_type': 'Raw',
                  'error_message': 'repeated key in RAW file section: %s' % 'Load',
-                 'diagnostics': {'records': section_num_records, 'distinct keys': len(self.loads), 'repeated keys': repeated_keys}})
+                 'diagnostics': {'records': section_num_records, 'distinct keys': len(self.loads),
+                                 'repeated keys': repeated_keys}})
 
         # fixed shunt section
         section_num_records = 0
@@ -2358,7 +2381,8 @@ class Raw:
             alert(
                 {'data_type': 'Raw',
                  'error_message': 'repeated key in RAW file section: %s' % 'FixedShunt',
-                 'diagnostics': {'records': section_num_records, 'distinct keys': len(self.fixed_shunts), 'repeated keys': repeated_keys}})
+                 'diagnostics': {'records': section_num_records, 'distinct keys': len(self.fixed_shunts),
+                                 'repeated keys': repeated_keys}})
 
         # generator section
         section_num_records = 0
@@ -2380,7 +2404,8 @@ class Raw:
             alert(
                 {'data_type': 'Raw',
                  'error_message': 'repeated key in RAW file section: %s' % 'Generator',
-                 'diagnostics': {'records': section_num_records, 'distinct keys': len(self.generators), 'repeated keys': repeated_keys}})
+                 'diagnostics': {'records': section_num_records, 'distinct keys': len(self.generators),
+                                 'repeated keys': repeated_keys}})
 
         # nontransformer branch section
         section_num_records = 0
@@ -2408,7 +2433,8 @@ class Raw:
             alert(
                 {'data_type': 'Raw',
                  'error_message': 'repeated key in RAW file section: %s' % 'NontransformerBranch',
-                 'diagnostics': {'records': section_num_records, 'distinct keys': len(self.nontransformer_branches), 'repeated keys': repeated_keys}})
+                 'diagnostics': {'records': section_num_records, 'distinct keys': len(self.nontransformer_branches),
+                                 'repeated keys': repeated_keys}})
 
         # transformer section
         section_num_records = 0
@@ -2423,13 +2449,13 @@ class Raw:
             transformer = Transformer()
             num_rows = transformer.get_num_rows_from_row(row)
             rows_temp = rows[
-                row_num:(row_num + num_rows)]
+                        row_num:(row_num + num_rows)]
             transformer.read_from_rows(rows_temp)
             self.transformers[(
                 transformer.i,
                 transformer.j,
-                #transformer.k,
-                #0, # leave k out
+                # transformer.k,
+                # 0, # leave k out
                 transformer.ckt)] = transformer
             row_num += (num_rows - 1)
             section_num_records += 1
@@ -2439,21 +2465,22 @@ class Raw:
             alert(
                 {'data_type': 'Raw',
                  'error_message': 'repeated key in RAW file section: %s' % 'Transformer',
-                 'diagnostics': {'records': section_num_records, 'distinct keys': len(self.transformers), 'repeated keys': repeated_keys}})
+                 'diagnostics': {'records': section_num_records, 'distinct keys': len(self.transformers),
+                                 'repeated keys': repeated_keys}})
 
         # skip section
-        #section_num_records = 0
-        while True: # areas
+        # section_num_records = 0
+        while True:  # areas
             row_num += 1
             row = rows[row_num]
             if self.row_is_file_end(row):
                 return
             if self.row_is_section_end(row):
                 break
-            #area = Area()
-            #area.read_from_row(row)
-            #self.areas[area.i] = area
-            #section_num_records += 1
+            # area = Area()
+            # area.read_from_row(row)
+            # self.areas[area.i] = area
+            # section_num_records += 1
         # if section_num_records > len(self.loads):
         #     alert(
         #         {'data_type': 'Raw',
@@ -2461,7 +2488,7 @@ class Raw:
         #          'diagnostics': {'records': section_num_records, 'distinct keys': len(self.loads)}})
 
         # skip section
-        while True: # two-terminal DC transmission line data
+        while True:  # two-terminal DC transmission line data
             row_num += 1
             row = rows[row_num]
             if self.row_is_file_end(row):
@@ -2470,7 +2497,7 @@ class Raw:
                 break
 
         # skip section
-        while True: # voltage source converter (VSC) DC transmission line data
+        while True:  # voltage source converter (VSC) DC transmission line data
             row_num += 1
             row = rows[row_num]
             if self.row_is_file_end(row):
@@ -2498,10 +2525,12 @@ class Raw:
             alert(
                 {'data_type': 'Raw',
                  'error_message': 'repeated key in RAW file section: %s' % 'TransformerImpedanceCorrectionTable',
-                 'diagnostics': {'records': section_num_records, 'distinct keys': len(self.transformer_impedance_correction_tables), 'repeated keys': repeated_keys}})
+                 'diagnostics': {'records': section_num_records,
+                                 'distinct keys': len(self.transformer_impedance_correction_tables),
+                                 'repeated keys': repeated_keys}})
 
         # skip section
-        while True: # zone
+        while True:  # zone
             row_num += 1
             row = rows[row_num]
             if self.row_is_file_end(row):
@@ -2519,7 +2548,7 @@ class Raw:
                 break
 
         # skip section
-        while True: # zone
+        while True:  # zone
             row_num += 1
             row = rows[row_num]
             if self.row_is_file_end(row):
@@ -2574,18 +2603,20 @@ class Raw:
             alert(
                 {'data_type': 'Raw',
                  'error_message': 'repeated key in RAW file section: %s' % 'SwitchedShunt',
-                 'diagnostics': {'records': section_num_records, 'distinct keys': len(self.switched_shunts), 'repeated keys': repeated_keys}})
-        
-        self.active_loads = dict(filter(lambda load: load[1].status >0, self.loads.items()))
-        self.num_loads_active =   len(self.active_loads)
-               
-        self.active_swsh = dict(filter(lambda swsh: swsh[1].stat >0, self.switched_shunts.items()))
-        self.num_swsh_active =   len(self.active_swsh)
+                 'diagnostics': {'records': section_num_records, 'distinct keys': len(self.switched_shunts),
+                                 'repeated keys': repeated_keys}})
+
+        self.active_loads = dict(filter(lambda load: load[1].status > 0, self.loads.items()))
+        self.num_loads_active = len(self.active_loads)
+
+        self.active_swsh = dict(filter(lambda swsh: swsh[1].stat > 0, self.switched_shunts.items()))
+        self.num_swsh_active = len(self.active_swsh)
 
     def skip_section(self):
 
         # todo
         pass
+
 
 class Con:
     '''In physical units, i.e. data convention, i.e. input and output data files'''
@@ -2621,30 +2652,30 @@ class Con:
 
     def scrub_ctg_labels(self, scrub_mode=False):
 
-        #print('debug in scrub_ctg_labels. scrub_mode: {}'.format(scrub_mode))
+        # print('debug in scrub_ctg_labels. scrub_mode: {}'.format(scrub_mode))
         if do_scrub_ctg_labels:
             max_ctg_num = max_num_ctgs - 1
             num_ctg_digits = len(str(max_ctg_num))
             ctg = self.get_contingencies()
             num_ctg = len(ctg)
-            #print('debug do_scrub_ctg_labels: {}, max_num_ctgs: {}, max_ctg_num: {}, num_ctg_digits: {}, num_ctg: {}'.format(
+            # print('debug do_scrub_ctg_labels: {}, max_num_ctgs: {}, max_ctg_num: {}, num_ctg_digits: {}, num_ctg: {}'.format(
             #    do_scrub_ctg_labels, max_num_ctgs, max_ctg_num, num_ctg_digits, num_ctg))
             ctg_label = [c.label for c in ctg]
-            #print('debug ctg_label: {}'.format(ctg_label))
+            # print('debug ctg_label: {}'.format(ctg_label))
             ctg_label_err = [check_ctg_label_err(l, max_ctg_num) for l in ctg_label]
-            #print('debug ctg_label_err: {}'.format(ctg_label_err))
+            # print('debug ctg_label_err: {}'.format(ctg_label_err))
             ctg_num = [
                 (get_ctg_num(ctg_label[i])
                  if ctg_label_err[i] == 0
                  else None)
                 for i in range(num_ctg)]
-            #print('debug ctg_num: {}'.format(ctg_num))
+            # print('debug ctg_num: {}'.format(ctg_num))
             ctg_num_in_use = sorted(list(set([ctg_num[i] for i in range(num_ctg) if ctg_label_err[i] == 0])))
-            #print('debug ctg_num_in_use: {}'.format(ctg_num_in_use))
+            # print('debug ctg_num_in_use: {}'.format(ctg_num_in_use))
             ctg_num_not_in_use = sorted(list(set(range(num_ctg)).difference(set(ctg_num_in_use))))
-            #print('debug ctg_num_not_in_use: {}'.format(ctg_num_not_in_use))
+            # print('debug ctg_num_not_in_use: {}'.format(ctg_num_not_in_use))
             indices_of_ctgs_with_err = [i for i in range(num_ctg) if ctg_label_err[i] > 0]
-            #print('debug indices_of_ctgs_with_err: {}'.format(indices_of_ctgs_with_err))
+            # print('debug indices_of_ctgs_with_err: {}'.format(indices_of_ctgs_with_err))
             if len(indices_of_ctgs_with_err) > 0:
                 i0 = indices_of_ctgs_with_err[0]
                 if scrub_mode:
@@ -2667,11 +2698,11 @@ class Con:
                         num = ctg_num_not_in_use[counter]
                         ctg_label[i] = (label_format_str % num)
                         counter += 1
-                    #print('debug ctg_label: {}'.format(ctg_label))
-                    self.contingencies = {ctg_label[i]:ctg[i] for i in range(num_ctg)}
+                    # print('debug ctg_label: {}'.format(ctg_label))
+                    self.contingencies = {ctg_label[i]: ctg[i] for i in range(num_ctg)}
                     for k, v in self.contingencies.items():
                         v.label = k
-                    
+
     def check_for_duplicate_outaged_generators(self, scrub_mode=False):
         '''Each contingency outages exactly one device, either a generator or a branch.
         This function checks that no two generator contingencies outage the same generator.
@@ -2680,16 +2711,16 @@ class Con:
 
         ctgs = self.get_contingencies()
         ctgs_to_remove = []
-        ctgs = [c for c in ctgs if len(c.generator_out_events) > 0] # filter down to just gen ctgs
+        ctgs = [c for c in ctgs if len(c.generator_out_events) > 0]  # filter down to just gen ctgs
         num_ctgs = len(ctgs)
         if num_ctgs < 2:
             return
-        ctgs_key_map = {c:(c.generator_out_events[0].i, c.generator_out_events[0].id) for c in ctgs}
+        ctgs_key_map = {c: (c.generator_out_events[0].i, c.generator_out_events[0].id) for c in ctgs}
         ctgs_sorted = sorted(ctgs, key=(lambda c: ctgs_key_map[c]))
         i = 0
         c_pre = ctgs_sorted[i]
         k_pre = ctgs_key_map[c_pre]
-        i += 1 # next one to look at
+        i += 1  # next one to look at
         while i < num_ctgs:
             c = ctgs_sorted[i]
             k = ctgs_key_map[c]
@@ -2729,17 +2760,19 @@ class Con:
 
         ctgs = self.get_contingencies()
         ctgs_to_remove = []
-        ctgs = [c for c in ctgs if len(c.branch_out_events) > 0] # filter down to just br ctgs
+        ctgs = [c for c in ctgs if len(c.branch_out_events) > 0]  # filter down to just br ctgs
         num_ctgs = len(ctgs)
         if num_ctgs < 2:
             return
-        ctgs_key_map = {c:(c.branch_out_events[0].i, c.branch_out_events[0].j, c.branch_out_events[0].ckt) for c in ctgs}
-        ctgs_key_map = {k:((v[0], v[1], v[2]) if (v[0] < v[1]) else (v[1], v[0], v[2])) for k, v in ctgs_key_map.items()}
+        ctgs_key_map = {c: (c.branch_out_events[0].i, c.branch_out_events[0].j, c.branch_out_events[0].ckt) for c in
+                        ctgs}
+        ctgs_key_map = {k: ((v[0], v[1], v[2]) if (v[0] < v[1]) else (v[1], v[0], v[2])) for k, v in
+                        ctgs_key_map.items()}
         ctgs_sorted = sorted(ctgs, key=(lambda c: ctgs_key_map[c]))
         i = 0
         c_pre = ctgs_sorted[i]
         k_pre = ctgs_key_map[c_pre]
-        i += 1 # next one to look at
+        i += 1  # next one to look at
         while i < num_ctgs:
             c = ctgs_sorted[i]
             k = ctgs_key_map[c]
@@ -2826,7 +2859,7 @@ class Con:
         writer = csv.writer(out_str, lineterminator="\n", quoting=csv.QUOTE_NONE, delimiter=' ')
         rows = [['END']]
         writer.writerows(rows)
-        return out_str.getvalue()        
+        return out_str.getvalue()
 
     def write(self, file_name):
         '''write a CON file'''
@@ -2835,8 +2868,8 @@ class Con:
             out_file.write(self.construct_data_records())
             out_file.write(self.construct_end_record())
 
-    def read(self, file_name, target_contingency = None):
-    
+    def read(self, file_name, target_contingency=None):
+
         with open(file_name, 'r') as in_file:
             lines = in_file.readlines()
         try:
@@ -2854,27 +2887,27 @@ class Con:
             traceback.print_exc()
             raise e
         delimiter_str = " "
-        #quote_str = "'"
+        # quote_str = "'"
         skip_initial_space = True
         rows = csv.reader(
             lines,
             delimiter=delimiter_str,
-            #quotechar=quote_str,
+            # quotechar=quote_str,
             skipinitialspace=skip_initial_space,
-            quoting=csv.QUOTE_NONE) # QUOTE_NONE
+            quoting=csv.QUOTE_NONE)  # QUOTE_NONE
         rows = [[t.strip() for t in r] for r in rows]
         self.read_from_rows(rows, target_contingency)
-        
+
     def row_is_file_end(self, row):
 
         is_file_end = False
         if len(row) == 0:
             is_file_end = True
-        if row[0][:1] in {'','q','Q'}:
+        if row[0][:1] in {'', 'q', 'Q'}:
             is_file_end = True
         return is_file_end
-    
-    #def row_is_section_end(self, row):
+
+    # def row_is_section_end(self, row):
     #
     #    is_section_end = False
     #    if row[0][:1] == '0':
@@ -2891,14 +2924,14 @@ class Con:
 
     def is_branch_out_event(self, row):
 
-        #return (
+        # return (
         #    row[0].upper() in {'DISCONNECT', 'OPEN', 'TRIP'} and
         #    row[1].upper() in {'BRANCH', 'LINE'})
         return (row[0] == 'OPEN' and row[1] == 'BRANCH')
 
     def is_three_winding(self, row):
 
-        #print(row)
+        # print(row)
         if len(row) < 9:
             return False
         elif row[8].upper() == 'TO':
@@ -2908,17 +2941,17 @@ class Con:
 
     def is_generator_out_event(self, row):
 
-        #return(
+        # return(
         #    row[0].upper() == 'REMOVE' and
         #    row[1].upper() in {'UNIT', 'MACHINE'})
 
         if row[1] == 'MACHINE':
             row[1] = 'UNIT'
 
-        return(row[0] == 'REMOVE' and row[1] == 'UNIT')
-        
-    #CHALLENGE2 - READ ONLY ONE CONTINGENCY
-    def read_from_rows(self, rows, target_contingency = None):
+        return (row[0] == 'REMOVE' and row[1] == 'UNIT')
+
+    # CHALLENGE2 - READ ONLY ONE CONTINGENCY
+    def read_from_rows(self, rows, target_contingency=None):
 
         row_num = -1
         in_contingency = False
@@ -2926,7 +2959,7 @@ class Con:
         keys_with_repeats = []
         while True:
             row_num += 1
-            #if row_num >= len(rows): # in case the data provider failed to put an end file line
+            # if row_num >= len(rows): # in case the data provider failed to put an end file line
             #    return
             try:
                 row = rows[row_num]
@@ -2936,7 +2969,7 @@ class Con:
                 raise e
             if self.row_is_file_end(row):
                 return
-            #if self.row_is_section_end(row):
+            # if self.row_is_section_end(row):
             #    break
             elif self.is_contingency_start(row):
                 in_contingency = True
@@ -2944,7 +2977,8 @@ class Con:
                 contingency.label = row[1]
             elif self.is_end(row):
                 if in_contingency:
-                    if  target_contingency == None or ( target_contingency != None and contingency.label == target_contingency):
+                    if target_contingency == None or (
+                            target_contingency != None and contingency.label == target_contingency):
                         self.contingencies[contingency.label] = contingency
                         num_records += 1
                         keys_with_repeats.append(contingency.label)
@@ -2975,16 +3009,18 @@ class Con:
             alert(
                 {'data_type': 'Con',
                  'error_message': 'repeated key in CON file',
-                 'diagnostics': {'records': num_records, 'distinct keys': len(self.contingencies), 'repeated keys': repeated_keys}})
+                 'diagnostics': {'records': num_records, 'distinct keys': len(self.contingencies),
+                                 'repeated keys': repeated_keys}})
+
 
 def get_repeated_keys(keys):
-
     keys_with_repeats = sorted(keys)
     repeated_keys = []
     for i in range(len(keys_with_repeats) - 1):
         if keys_with_repeats[i] == keys_with_repeats[i + 1]:
             repeated_keys.append(keys_with_repeats[i])
     return sorted(list(set(repeated_keys)))
+
 
 class CaseIdentification:
 
@@ -2999,7 +3035,7 @@ class CaseIdentification:
         self.record_1 = None
         self.record_2 = None
         self.record_3 = None
-        #self.comment = ''
+        # self.comment = ''
 
     def check(self):
 
@@ -3010,11 +3046,11 @@ class CaseIdentification:
         if not (self.sbase > 0.0):
             alert(
                 {'data_type':
-                 'CaseIdentification',
+                     'CaseIdentification',
                  'error_message':
-                 'fails sbase positivitiy. please ensure that sbase > 0.0',
+                     'fails sbase positivitiy. please ensure that sbase > 0.0',
                  'diagnostics':
-                 {'sbase': self.sbase}})
+                     {'sbase': self.sbase}})
 
     def read_record_1_from_row(self, row):
         row = pad_row(row, 6)
@@ -3025,10 +3061,10 @@ class CaseIdentification:
             self.rev = parse_token(row[2], int, 33)
             self.xfrrat = (1 if (parse_token(row[3], float, 0.0) > 0.0) else 0)
             self.nxfrat = (1 if (parse_token(row[4], float, 1.0) > 0.0) else 0)
-            #self.xfrrat = parse_token(row[3], int, 0)
-            #self.nxfrat = parse_token(row[4], int, 1)
-            self.basfrq = parse_token(row[5], float, 60.0) # need to remove end of line comment
-            #self.comment = row[6] if len(row) > 6 else ''
+            # self.xfrrat = parse_token(row[3], int, 0)
+            # self.nxfrat = parse_token(row[4], int, 1)
+            self.basfrq = parse_token(row[5], float, 60.0)  # need to remove end of line comment
+            # self.comment = row[6] if len(row) > 6 else ''
 
     def read_from_rows(self, rows):
 
@@ -3039,12 +3075,13 @@ class CaseIdentification:
         if len(rows[2]) > 0:
             self.record_3 = rows[2]
 
+
 class Bus:
 
     def __init__(self):
 
-        self.i = None # no default allowed - we want this to throw an error
-        self.name = 12*' '
+        self.i = None  # no default allowed - we want this to throw an error
+        self.name = 12 * ' '
         self.baskv = 0.0
         self.ide = 1
         self.area = 1
@@ -3104,7 +3141,7 @@ class Bus:
 
     def check_i_le_imax(self):
 
-        imax = 999997 # from commercial power system software manual
+        imax = 999997  # from commercial power system software manual
         if self.i > imax:
             alert(
                 {'data_type': 'Bus',
@@ -3122,7 +3159,7 @@ class Bus:
                  'diagnostics': {
                      'i': self.i,
                      'area': self.area}})
-    
+
     def check_vm_pos(self):
 
         if not (self.vm > 0.0):
@@ -3233,20 +3270,21 @@ class Bus:
         self.evhi = parse_token(row[11], float, default=None)
         self.evlo = parse_token(row[12], float, default=None)
         if read_unused_fields:
-            self.name = parse_token(row[1], str, 12*' ')
+            self.name = parse_token(row[1], str, 12 * ' ')
             self.baskv = parse_token(row[2], float, 0.0)
             self.ide = parse_token(row[3], int, 1)
             self.zone = parse_token(row[5], int, 1)
             self.owner = parse_token(row[6], int, 1)
-    
+
+
 class Load:
 
     def __init__(self):
 
-        self.i = None # no default allowed - should be an error
+        self.i = None  # no default allowed - should be an error
         self.id = '1'
         self.status = 1
-        self.area = 1 # default is area of bus self.i, but this is not available yet
+        self.area = 1  # default is area of bus self.i, but this is not available yet
         self.zone = 1
         self.pl = 0.0
         self.ql = 0.0
@@ -3296,7 +3334,7 @@ class Load:
 
     def check_id_len_1_or_2(self):
 
-        if not(len(self.id) in [1, 2]):
+        if not (len(self.id) in [1, 2]):
             alert(
                 {'data_type': 'Load',
                  'error_message': 'fails id string len 1 or 2. Please ensure that the id field of every load is a 1- or 2-character string with no blank characters',
@@ -3304,7 +3342,7 @@ class Load:
                      'i': self.i,
                      'id': self.id}})
 
-    #def clean_id(self):
+        # def clean_id(self):
         '''remove spaces and non-allowed characters
         hope that this does not introduce duplication'''
 
@@ -3329,11 +3367,12 @@ class Load:
             self.scale = parse_token(row[12], int, 1)
             self.intrpt = parse_token(row[13], int, 0)
 
+
 class FixedShunt:
 
     def __init__(self):
 
-        self.i = None # no default allowed
+        self.i = None  # no default allowed
         self.id = '1'
         self.status = 1
         self.gl = 0.0
@@ -3350,7 +3389,7 @@ class FixedShunt:
 
     def check_id_len_1_or_2(self):
 
-        if not(len(self.id) in [1, 2]):
+        if not (len(self.id) in [1, 2]):
             alert(
                 {'data_type': 'FixedShunt',
                  'error_message': 'fails id string len 1 or 2. Please ensure that the id field of every fixed shunt is a 1- or 2-character string with no blank characters',
@@ -3369,10 +3408,11 @@ class FixedShunt:
         if read_unused_fields:
             pass
 
+
 class Generator:
 
     def __init__(self):
-        self.i = None # no default allowed
+        self.i = None  # no default allowed
         self.id = '1'
         self.pg = 0.0
         self.qg = 0.0
@@ -3380,7 +3420,7 @@ class Generator:
         self.qb = -9999.0
         self.vs = 1.0
         self.ireg = 0
-        self.mbase = 100.0 # need to take default value for this from larger Raw class
+        self.mbase = 100.0  # need to take default value for this from larger Raw class
         self.zr = 0.0
         self.zx = 1.0
         self.rt = 0.0
@@ -3444,7 +3484,7 @@ class Generator:
 
     def check_id_len_1_or_2(self):
 
-        if not(len(self.id) in [1, 2]):
+        if not (len(self.id) in [1, 2]):
             alert(
                 {'data_type': 'Generator',
                  'error_message': 'fails id string len 1 or 2. Please ensure that the id field of every generator is a 1- or 2-character string with no blank characters',
@@ -3453,7 +3493,7 @@ class Generator:
                      'id': self.id}})
 
     def check_pg_stat_consistent(self):
-        
+
         if abs(self.pg) > 0.0 and self.stat == 0:
             alert(
                 {'data_type': 'Generator',
@@ -3465,7 +3505,7 @@ class Generator:
                      'stat': self.stat}})
 
     def check_qg_stat_consistent(self):
-        
+
         if abs(self.qg) > 0.0 and self.stat == 0:
             alert(
                 {'data_type': 'Generator',
@@ -3477,7 +3517,7 @@ class Generator:
                      'stat': self.stat}})
 
     def check_qt_qb_consistent(self):
-        
+
         if self.qt - self.qb < 0.0:
             alert(
                 {'data_type': 'Generator',
@@ -3490,7 +3530,7 @@ class Generator:
                      'qb': self.qb}})
 
     def check_pt_pb_consistent(self):
-        
+
         if self.pt - self.pb < 0.0:
             alert(
                 {'data_type': 'Generator',
@@ -3502,9 +3542,8 @@ class Generator:
                      'pt': self.pt,
                      'pb': self.pb}})
 
-
     def scrub_pg_stat_consistent(self):
-        
+
         if pg_qg_stat_mode == 1:
             message = 'Setting pg to 0.0.'
         elif pg_qg_stat_mode == 2:
@@ -3526,7 +3565,7 @@ class Generator:
                 self.stat = 1
 
     def scrub_qg_stat_consistent(self):
-        
+
         if pg_qg_stat_mode == 1:
             message = 'Setting qg to 0.0.'
         elif pg_qg_stat_mode == 2:
@@ -3580,7 +3619,7 @@ class Generator:
             self.xt = parse_token(row[12], float, 0.0)
             self.gtap = parse_token(row[13], float, 1.0)
             self.rmpct = parse_token(row[15], float, 100.0)
-            self.o1 = parse_token(row[18] if 18 < len(row) else None,int, 1)
+            self.o1 = parse_token(row[18] if 18 < len(row) else None, int, 1)
             self.f1 = parse_token(row[19] if 19 < len(row) else None, float, 1.0)
             self.o2 = parse_token(row[20] if 20 < len(row) else None, int, 0)
             self.f2 = parse_token(row[21] if 21 < len(row) else None, float, 1.0)
@@ -3591,15 +3630,16 @@ class Generator:
             self.wmod = parse_token(row[26] if 26 < len(row) else None, int, 0)
             self.wpf = parse_token(row[27] if 27 < len(row) else None, float, 1.0)
 
+
 class NontransformerBranch:
 
     def __init__(self):
 
-        self.i = None # no default
-        self.j = None # no default
+        self.i = None  # no default
+        self.j = None  # no default
         self.ckt = '1'
-        self.r = None # no default
-        self.x = None # no default
+        self.r = None  # no default
+        self.x = None  # no default
         self.b = 0.0
         self.ratea = 0.0
         self.rateb = 0.0
@@ -3632,7 +3672,7 @@ class NontransformerBranch:
                      'j': self.j,
                      'ckt': self.ckt,
                      'ratea': self.ratea}})
-            ''' 
+            '''
             self.ratea = default_branch_limit
         if self.ratec < self.ratea:
             ''' 
@@ -3683,10 +3723,10 @@ class NontransformerBranch:
                      'i': self.i,
                      'j': self.j,
                      'ckt': self.ckt}})
-        
+
     def check_ckt_len_1_or_2(self):
 
-        if not(len(self.ckt) in [1, 2]):
+        if not (len(self.ckt) in [1, 2]):
             alert(
                 {'data_type': 'NontransformerBranch',
                  'error_message': 'fails ckt string len 1 or 2. Please ensure that the id field of every nontransformer branch is a 1- or 2-character string with no blank characters',
@@ -3696,7 +3736,7 @@ class NontransformerBranch:
                      'ckt': self.ckt}})
 
     def check_r_x_nonzero(self):
-        
+
         if (self.r == 0.0 and self.x == 0.0):
             alert(
                 {'data_type': 'NontransformerBranch',
@@ -3709,7 +3749,7 @@ class NontransformerBranch:
                      'x:': self.x}})
 
     def check_ratea_pos(self):
-        
+
         if not (self.ratea > 0.0):
             alert(
                 {'data_type': 'NontransformerBranch',
@@ -3721,7 +3761,7 @@ class NontransformerBranch:
                      'ratea': self.ratea}})
 
     def check_ratec_pos(self):
-        
+
         if not (self.ratec > 0.0):
             alert(
                 {'data_type': 'NontransformerBranch',
@@ -3738,7 +3778,7 @@ class NontransformerBranch:
         if ratec_ratea_2 == True:
             return
         ratec_ratea_2 = True
-        
+
         if self.ratec - self.ratea < 0.0:
             alert(
                 {'data_type': 'NontransformerBranch',
@@ -3773,19 +3813,20 @@ class NontransformerBranch:
             self.len = parse_token(row[15], float, 0.0)
             self.o1 = parse_token(row[16] if 16 < len(row) else None, int, 1)
             self.f1 = parse_token(row[17] if 17 < len(row) else None, float, 1.0)
-            self.o2 = parse_token(row[18] if 18 < len(row) else None,int, 0)
+            self.o2 = parse_token(row[18] if 18 < len(row) else None, int, 0)
             self.f2 = parse_token(row[19] if 19 < len(row) else None, float, 1.0)
             self.o3 = parse_token(row[20] if 20 < len(row) else None, int, 0)
             self.f3 = parse_token(row[21] if 21 < len(row) else None, float, 1.0)
             self.o4 = parse_token(row[22] if 22 < len(row) else None, int, 0)
             self.f4 = parse_token(row[23] if 23 < len(row) else None, float, 1.0)
 
+
 class Transformer:
 
     def __init__(self):
 
-        self.i = None # no default
-        self.j = None # no default
+        self.i = None  # no default
+        self.j = None  # no default
         self.k = 0
         self.ckt = '1'
         self.cw = 1
@@ -3794,7 +3835,7 @@ class Transformer:
         self.mag1 = 0.0
         self.mag2 = 0.0
         self.nmetr = 2
-        self.name = 12*' '
+        self.name = 12 * ' '
         self.stat = 1
         self.o1 = 1
         self.f1 = 1.0
@@ -3804,9 +3845,9 @@ class Transformer:
         self.f3 = 1.0
         self.o4 = 0
         self.f4 = 1.0
-        self.vecgrp = 12*' '
+        self.vecgrp = 12 * ' '
         self.r12 = 0.0
-        self.x12 = None # no default allowed
+        self.x12 = None  # no default allowed
         self.sbase12 = 100.0
         self.windv1 = 1.0
         self.nomv1 = 0.0
@@ -3855,7 +3896,7 @@ class Transformer:
                      'ckt': self.ckt,
                      'rata1': self.rata1,
                      'ratc1': self.ratc1}})
-            ''' 
+            '''
             self.ratc1 = self.rata1
         self.check_tau_theta_init_feas(scrub_mode=True)
 
@@ -3863,7 +3904,7 @@ class Transformer:
 
         check_two_char_id_str(self.ckt)
         self.check_ckt_len_1_or_2()
-        self.check_cod1_013() # COD1 can be any integer value now - nope, not anymore
+        self.check_cod1_013()  # COD1 can be any integer value now - nope, not anymore
         self.check_ntp1_odd_ge_1()
         self.check_r12_x12_nonzero()
         if do_check_rate_pos:
@@ -3939,11 +3980,11 @@ class Transformer:
                      'step_size': step_size}})
         if scrub_mode:
             if do_fix_xfmr_tau_theta_init:
-                #print('scrubbing xfmr tau/theta init value')
-                if self.cod1 in [-1,1]:
+                # print('scrubbing xfmr tau/theta init value')
+                if self.cod1 in [-1, 1]:
                     self.windv1 = oper_val_resulting
                     self.windv2 = 1.0
-                elif self.cod1 in [-3,3]:
+                elif self.cod1 in [-3, 3]:
                     self.ang1 = oper_val_resulting
         elif abs(resid) > xfmr_tau_theta_init_tol * abs(oper_val):
             alert(
@@ -3966,7 +4007,7 @@ class Transformer:
                      'resid': resid,
                      'mid_val': mid_val,
                      'step_size': step_size}})
-        
+
     def check_k_0(self):
 
         if not (self.k == 0):
@@ -3978,7 +4019,7 @@ class Transformer:
                      'j': self.j,
                      'k': self.k,
                      'ckt': self.ckt}})
-        
+
     def check_i_lt_j(self):
 
         if not (self.i < self.j):
@@ -4003,7 +4044,7 @@ class Transformer:
 
     def check_ckt_len_1_or_2(self):
 
-        if not(len(self.ckt) in [1, 2]):
+        if not (len(self.ckt) in [1, 2]):
             alert(
                 {'data_type': 'Transformer',
                  'error_message': 'fails ckt string len 1 or 2. Please ensure that the ckt field of every transformer is a 1- or 2-character string with no blank characters',
@@ -4014,7 +4055,7 @@ class Transformer:
                      'ckt': self.ckt}})
 
     def check_r12_x12_nonzero(self):
-        
+
         if (self.r12 == 0.0 and self.x12 == 0.0):
             alert(
                 {'data_type': 'Transformer',
@@ -4028,7 +4069,7 @@ class Transformer:
                      'x12:': self.x12}})
 
     def check_rata1_pos(self):
-        
+
         if not (self.rata1 > 0.0):
             alert(
                 {'data_type': 'Transformer',
@@ -4041,7 +4082,7 @@ class Transformer:
                      'rata1': self.rata1}})
 
     def check_ratc1_pos(self):
-        
+
         if not (self.ratc1 > 0.0):
             alert(
                 {'data_type': 'Transformer',
@@ -4060,7 +4101,7 @@ class Transformer:
             return
 
         ratc1_rata1 = True
-        
+
         if self.ratc1 - self.rata1 < 0.0:
             alert(
                 {'data_type': 'Transformer',
@@ -4075,7 +4116,7 @@ class Transformer:
                      'rata1': self.rata1}})
 
     def check_windv1_pos(self):
-        
+
         if not (self.windv1 > 0.0):
             alert(
                 {'data_type': 'Transformer',
@@ -4088,7 +4129,7 @@ class Transformer:
                      'windv1': self.windv1}})
 
     def check_windv2_pos(self):
-        
+
         if not (self.windv2 > 0.0):
             alert(
                 {'data_type': 'Transformer',
@@ -4101,8 +4142,8 @@ class Transformer:
                      'windv2': self.windv2}})
 
     def check_windv2_eq_1(self):
-        
-        if not(self.windv2 == 1.0):
+
+        if not (self.windv2 == 1.0):
             alert(
                 {'data_type': 'Transformer',
                  'error_message': 'fails windv2 exactly equal to 1.0. Please ensure that the windv2 field of every transformer is equal to 1.0. Transformers not satisfying this property can be converted. This ensures that the formulation used by the Grid Optimization Competition is consistent with the model described in PSSE proprietary documentation',
@@ -4124,7 +4165,7 @@ class Transformer:
         else:
             num_windings = 3
         return num_windings
-    
+
     def get_num_rows_from_row(self, row):
 
         num_rows = 0
@@ -4145,7 +4186,7 @@ class Transformer:
             print("row:")
             print(row)
             raise e
-        
+
     def pad_rows(self, rows):
 
         return rows
@@ -4165,7 +4206,7 @@ class Transformer:
 
         row = [t for r in rows for t in r]
         return row
-    
+
     def read_from_row(self, row):
 
         # general (3- or 2-winding, 5- or 4-row)
@@ -4254,7 +4295,7 @@ class Transformer:
         self.cx3 = parse_token(row[81], float, 0.0)
         self.cnxa3 = parse_token(row[82], float, 0.0)
         '''
-        
+
         # check no 3-winding
         self.i = parse_token(row[0], int, default=None)
         self.j = parse_token(row[1], int, default=None)
@@ -4302,7 +4343,7 @@ class Transformer:
             self.cz = parse_token(row[5], int, 1)
             self.cm = parse_token(row[6], int, 1)
             self.nmetr = parse_token(row[9], int, 2)
-            self.name = parse_token(row[10], str, 12*' ')
+            self.name = parse_token(row[10], str, 12 * ' ')
             self.o1 = parse_token(row[12], int, 1)
             self.f1 = parse_token(row[13], float, 1.0)
             self.o2 = parse_token(row[14], int, 0)
@@ -4311,7 +4352,7 @@ class Transformer:
             self.f3 = parse_token(row[17], float, 1.0)
             self.o4 = parse_token(row[18], int, 0)
             self.f4 = parse_token(row[19], float, 1.0)
-            self.vecgrp = parse_token(row[20], str, 12*' ')
+            self.vecgrp = parse_token(row[20], str, 12 * ' ')
             self.sbase12 = parse_token(row[23], float, 0.0)
             self.nomv1 = parse_token(row[25], float, 0.0)
             self.ratb1 = parse_token(row[28], float, 0.0)
@@ -4328,11 +4369,12 @@ class Transformer:
             self.cnxa1 = parse_token(row[40], float, 0.0)
             self.nomv2 = parse_token(row[42], float, 0.0)
 
+
 class TransformerImpedanceCorrectionTable:
 
     def __init__(self):
 
-        self.i = None # no default
+        self.i = None  # no default
         self.t1 = 0.0
         self.f1 = 0.0
         self.t2 = 0.0
@@ -4364,10 +4406,10 @@ class TransformerImpedanceCorrectionTable:
 
         row = pad_row(row, 23)
         self.i = parse_token(row[0], int, default=None)
-        #self.t1 = parse_token(row[1], float, default=0.0)
-        #self.f1 = parse_token(row[2], float, default=0.0)
-        #self.t2 = parse_token(row[3], float, default=0.0)
-        #self.f2 = parse_token(row[4], float, default=0.0)
+        # self.t1 = parse_token(row[1], float, default=0.0)
+        # self.f1 = parse_token(row[2], float, default=0.0)
+        # self.t2 = parse_token(row[3], float, default=0.0)
+        # self.f2 = parse_token(row[4], float, default=0.0)
         self.t1 = parse_token(row[1] if 1 < len(row) else None, float, default=0.0)
         self.f1 = parse_token(row[2] if 2 < len(row) else None, float, default=0.0)
         self.t2 = parse_token(row[3] if 3 < len(row) else None, float, default=0.0)
@@ -4390,18 +4432,18 @@ class TransformerImpedanceCorrectionTable:
         self.f10 = parse_token(row[20] if 20 < len(row) else None, float, default=0.0)
         self.t11 = parse_token(row[21] if 21 < len(row) else None, float, default=0.0)
         self.f11 = parse_token(row[22] if 22 < len(row) else None, float, default=0.0)
-        
-        #CHALLENGE2
+
+        # CHALLENGE2
         self.tict_point_count = 11
-        for i in range(1,12):
+        for i in range(1, 12):
             ti = eval('self.t{}'.format(i))
             fi = eval('self.f{}'.format(i))
-            if ti is None or fi is None or fi == 0.0: # note ti==0.0 COULD be valid
-                self.tict_point_count = i-1
+            if ti is None or fi is None or fi == 0.0:  # note ti==0.0 COULD be valid
+                self.tict_point_count = i - 1
                 break
-    
-        self.t = [ self.t1, self.t2, self.t3, self.t4, self.t5, self.t6, self.t7, self.t8, self.t9, self.t10, self.t11 ]
-        self.f = [ self.f1, self.f2, self.f3, self.f4, self.f5, self.f6, self.f7, self.f8, self.f9, self.f10, self.f11 ]
+
+        self.t = [self.t1, self.t2, self.t3, self.t4, self.t5, self.t6, self.t7, self.t8, self.t9, self.t10, self.t11]
+        self.f = [self.f1, self.f2, self.f3, self.f4, self.f5, self.f6, self.f7, self.f8, self.f9, self.f10, self.f11]
 
     def check(self, scrub_mode=False):
 
@@ -4415,8 +4457,8 @@ class TransformerImpedanceCorrectionTable:
             alert(
                 {'data_type': 'TransformerImpedanceCorrectionTable',
                  'error_message': 'fails num points >= 2. {}'.format(
-                        'adding points' if scrub_mode else
-                        'scrubber will add points'),
+                     'adding points' if scrub_mode else
+                     'scrubber will add points'),
                  'diagnostics': {
                      'i': self.i,
                      't1': self.t1, 'f1': self.f1,
@@ -4454,20 +4496,20 @@ class TransformerImpedanceCorrectionTable:
             alert(
                 {'data_type': 'TransformerImpedanceCorrectionTable',
                  'error_message': 'fails i > 0. scrubber does not fix this',
-                'diagnostics': {
-                    'i': self.i,
-                    't1': self.t1, 'f1': self.f1,
-                    't2': self.t2, 'f2': self.f2,
-                    't3': self.t3, 'f3': self.f3,
-                    't4': self.t4, 'f4': self.f4,
-                    't5': self.t5, 'f5': self.f5,
-                    't6': self.t6, 'f6': self.f6,
-                    't7': self.t7, 'f7': self.f7,
-                    't8': self.t8, 'f8': self.f8,
-                    't9': self.t9, 'f9': self.f9,
-                    't10': self.t10, 'f10': self.f10,
-                    't11': self.t11, 'f11': self.f11}})
-    
+                 'diagnostics': {
+                     'i': self.i,
+                     't1': self.t1, 'f1': self.f1,
+                     't2': self.t2, 'f2': self.f2,
+                     't3': self.t3, 'f3': self.f3,
+                     't4': self.t4, 'f4': self.f4,
+                     't5': self.t5, 'f5': self.f5,
+                     't6': self.t6, 'f6': self.f6,
+                     't7': self.t7, 'f7': self.f7,
+                     't8': self.t8, 'f8': self.f8,
+                     't9': self.t9, 'f9': self.f9,
+                     't10': self.t10, 'f10': self.f10,
+                     't11': self.t11, 'f11': self.f11}})
+
     def check_t_increasing(self, scrub_mode=False):
 
         for i in range(self.tict_point_count - 1):
@@ -4476,29 +4518,30 @@ class TransformerImpedanceCorrectionTable:
                     {'data_type': 'TransformerImpedanceCorrectionTable',
                      'error_message': 'fails t increasing. scrubber does not fix this',
                      'diagnostics': {
-                            'i': self.i,
-                            't1': self.t1, 'f1': self.f1,
-                            't2': self.t2, 'f2': self.f2,
-                            't3': self.t3, 'f3': self.f3,
-                            't4': self.t4, 'f4': self.f4,
-                            't5': self.t5, 'f5': self.f5,
-                            't6': self.t6, 'f6': self.f6,
-                            't7': self.t7, 'f7': self.f7,
-                            't8': self.t8, 'f8': self.f8,
-                            't9': self.t9, 'f9': self.f9,
-                            't10': self.t10, 'f10': self.f10,
-                            't11': self.t11, 'f11': self.f11}})
+                         'i': self.i,
+                         't1': self.t1, 'f1': self.f1,
+                         't2': self.t2, 'f2': self.f2,
+                         't3': self.t3, 'f3': self.f3,
+                         't4': self.t4, 'f4': self.f4,
+                         't5': self.t5, 'f5': self.f5,
+                         't6': self.t6, 'f6': self.f6,
+                         't7': self.t7, 'f7': self.f7,
+                         't8': self.t8, 'f8': self.f8,
+                         't9': self.t9, 'f9': self.f9,
+                         't10': self.t10, 'f10': self.f10,
+                         't11': self.t11, 'f11': self.f11}})
                 break
-            
+
+
 class Area:
 
     def __init__(self):
 
-        self.i = None # no default
+        self.i = None  # no default
         self.isw = 0
         self.pdes = 0.0
         self.ptol = 10.0
-        self.arname = 12*' '
+        self.arname = 12 * ' '
 
     def clean_arname(self):
 
@@ -4509,8 +4552,8 @@ class Area:
         self.check_i_pos()
 
     def check_i_pos(self):
-        
-        if not(self.i > 0):
+
+        if not (self.i > 0):
             alert(
                 {'data_type': 'Area',
                  'error_message': 'fails i positivity. Please ensure that the i field of every area is a positive integer.',
@@ -4525,14 +4568,15 @@ class Area:
             self.isw = parse_token(row[1], int, 0)
             self.pdes = parse_token(row[2], float, 0.0)
             self.ptol = parse_token(row[3], float, 10.0)
-            self.arname = parse_token(row[4], str, 12*' ')
+            self.arname = parse_token(row[4], str, 12 * ' ')
+
 
 class Zone:
 
     def __init__(self):
 
-        self.i = None # no default
-        self.zoname = 12*' '
+        self.i = None  # no default
+        self.zoname = 12 * ' '
 
     def clean_zoname(self):
 
@@ -4543,26 +4587,27 @@ class Zone:
         self.check_i_pos()
 
     def check_i_pos(self):
-        
-        if not(self.i > 0):
+
+        if not (self.i > 0):
             alert(
                 {'data_type': 'Zone',
                  'error_message': 'fails i positivity. Please ensure that the i field of every zone is a positive integer.',
                  'diagnostics': {
                      'i': self.i}})
-        
+
     def read_from_row(self, row):
 
         row = pad_row(row, 2)
         self.i = parse_token(row[0], int, default=None)
         if read_unused_fields:
-            self.zoname = parse_token(row[1], str, 12*' ')
+            self.zoname = parse_token(row[1], str, 12 * ' ')
+
 
 class SwitchedShunt:
 
     def __init__(self):
 
-        self.i = None # no default
+        self.i = None  # no default
         self.id = "1"
         self.modsw = 1
         self.adjm = 0
@@ -4571,7 +4616,7 @@ class SwitchedShunt:
         self.vswlo = 1.0
         self.swrem = 0
         self.rmpct = 100.0
-        self.rmidnt = 12*' '
+        self.rmidnt = 12 * ' '
         self.binit = 0.0
         self.n1 = 0
         self.b1 = 0.0
@@ -4602,8 +4647,8 @@ class SwitchedShunt:
         b_min_max = self.compute_bmin_bmax()
         bmin = b_min_max[0]
         bmax = b_min_max[1]
-        #tolabs = 1e-8
-        #tol = max(abs(self.binit) * tolabs, tolabs)
+        # tolabs = 1e-8
+        # tol = max(abs(self.binit) * tolabs, tolabs)
         if self.binit < bmin:
             self.binit = bmin
         elif self.binit > bmax:
@@ -4666,9 +4711,9 @@ class SwitchedShunt:
           bmax = sum_{h = 1}^8 max{0, bh} nh
         '''
 
-        #self.check_b1_b2_opposite_signs()
-        #self.check_n1_0_implies_b1_0_n2_0_b2_0()
-        #self.check_b1_0_implies_n1_0_n2_0_b2_0()
+        # self.check_b1_b2_opposite_signs()
+        # self.check_n1_0_implies_b1_0_n2_0_b2_0()
+        # self.check_b1_0_implies_n1_0_n2_0_b2_0()
         self.check_n1_nonneg()
         self.check_n2_nonneg()
         self.check_n3_nonneg()
@@ -4749,7 +4794,7 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n1': self.n1}})
-                                                
+
     def check_n2_nonneg(self):
 
         if self.n2 < 0:
@@ -4759,7 +4804,7 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n2': self.n2}})
-    
+
     def check_n3_nonneg(self):
 
         if self.n3 < 0:
@@ -4769,7 +4814,7 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n3': self.n3}})
-    
+
     def check_n4_nonneg(self):
 
         if self.n4 < 0:
@@ -4779,7 +4824,7 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n4': self.n4}})
-    
+
     def check_n5_nonneg(self):
 
         if self.n5 < 0:
@@ -4789,7 +4834,7 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n5': self.n5}})
-    
+
     def check_n6_nonneg(self):
 
         if self.n6 < 0:
@@ -4799,7 +4844,7 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n6': self.n6}})
-    
+
     def check_n7_nonneg(self):
 
         if self.n7 < 0:
@@ -4809,7 +4854,7 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n7': self.n7}})
-    
+
     def check_n8_nonneg(self):
 
         if self.n8 < 0:
@@ -4829,7 +4874,7 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n1': self.n1}})
-                                                
+
     def check_n2_max(self):
 
         if self.n2 > max_swsh_n:
@@ -4839,7 +4884,7 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n2': self.n2}})
-    
+
     def check_n3_max(self):
 
         if self.n3 > max_swsh_n:
@@ -4849,7 +4894,7 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n3': self.n3}})
-    
+
     def check_n4_max(self):
 
         if self.n4 > max_swsh_n:
@@ -4859,7 +4904,7 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n4': self.n4}})
-    
+
     def check_n5_max(self):
 
         if self.n5 > max_swsh_n:
@@ -4869,7 +4914,7 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n5': self.n5}})
-    
+
     def check_n6_max(self):
 
         if self.n6 > max_swsh_n:
@@ -4879,7 +4924,7 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n6': self.n6}})
-    
+
     def check_n7_max(self):
 
         if self.n7 > max_swsh_n:
@@ -4889,7 +4934,7 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n7': self.n7}})
-    
+
     def check_n8_max(self):
 
         if self.n8 > max_swsh_n:
@@ -4899,7 +4944,7 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n8': self.n8}})
-    
+
     def check_n1_le_1(self):
 
         if self.n1 > 1:
@@ -4909,7 +4954,6 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n1': self.n1}})
-    
 
     def check_n2_le_1(self):
 
@@ -4920,7 +4964,7 @@ class SwitchedShunt:
                  'diagnostics': {
                      'i': self.i,
                      'n2': self.n2}})
-    
+
     def check_n3_zero(self):
 
         if not (self.n3 == 0):
@@ -5098,31 +5142,31 @@ class SwitchedShunt:
 
     def read_from_row(self, row):
 
-        #print(row)
-        #if int(row[0]) == 23393:
+        # print(row)
+        # if int(row[0]) == 23393:
         #    print(row)
         row = pad_row(row, 26)
         self.i = parse_token(row[0], int, default=None)
         self.stat = parse_token(row[3], int, default=None)
         self.binit = parse_token(row[9], float, default=None)
-        #self.n1 = parse_token(row[10], int, default=None) # allow 0 blocks
-        #self.b1 = parse_token(row[11], float, default=None)
-        self.n1 = parse_token(row[10] , int, default=0)     if 10 < len(row) else 0
-        self.b1 = parse_token(row[11] , float, default=0.0) if 11 < len(row) else 0.0
-        self.n2 = parse_token(row[12] , int, default=0)     if 12 < len(row) else 0
-        self.b2 = parse_token(row[13] , float, default=0.0) if 13 < len(row) else 0.0
-        self.n3 = parse_token(row[14] , int, default=0)     if 14 < len(row) else 0
-        self.b3 = parse_token(row[15] , float, default=0.0) if 15 < len(row) else 0.0
-        self.n4 = parse_token(row[16] , int, default=0)     if 16 < len(row) else 0
-        self.b4 = parse_token(row[17] , float, default=0.0) if 17 < len(row) else 0.0
-        self.n5 = parse_token(row[18] , int, default=0)     if 18 < len(row) else 0
-        self.b5 = parse_token(row[19] , float, default=0.0) if 19 < len(row) else 0.0
-        self.n6 = parse_token(row[20] , int, default=0)     if 20 < len(row) else 0
-        self.b6 = parse_token(row[21] , float, default=0.0) if 21 < len(row) else 0.0
-        self.n7 = parse_token(row[22] , int, default=0)     if 22 < len(row) else 0
-        self.b7 = parse_token(row[23] , float, default=0.0) if 23 < len(row) else 0.0
-        self.n8 = parse_token(row[24] , int, default=0)     if 24 < len(row) else 0
-        self.b8 = parse_token(row[25] , float, default=0.0) if 25 < len(row) else 0.0
+        # self.n1 = parse_token(row[10], int, default=None) # allow 0 blocks
+        # self.b1 = parse_token(row[11], float, default=None)
+        self.n1 = parse_token(row[10], int, default=0) if 10 < len(row) else 0
+        self.b1 = parse_token(row[11], float, default=0.0) if 11 < len(row) else 0.0
+        self.n2 = parse_token(row[12], int, default=0) if 12 < len(row) else 0
+        self.b2 = parse_token(row[13], float, default=0.0) if 13 < len(row) else 0.0
+        self.n3 = parse_token(row[14], int, default=0) if 14 < len(row) else 0
+        self.b3 = parse_token(row[15], float, default=0.0) if 15 < len(row) else 0.0
+        self.n4 = parse_token(row[16], int, default=0) if 16 < len(row) else 0
+        self.b4 = parse_token(row[17], float, default=0.0) if 17 < len(row) else 0.0
+        self.n5 = parse_token(row[18], int, default=0) if 18 < len(row) else 0
+        self.b5 = parse_token(row[19], float, default=0.0) if 19 < len(row) else 0.0
+        self.n6 = parse_token(row[20], int, default=0) if 20 < len(row) else 0
+        self.b6 = parse_token(row[21], float, default=0.0) if 21 < len(row) else 0.0
+        self.n7 = parse_token(row[22], int, default=0) if 22 < len(row) else 0
+        self.b7 = parse_token(row[23], float, default=0.0) if 23 < len(row) else 0.0
+        self.n8 = parse_token(row[24], int, default=0) if 24 < len(row) else 0
+        self.b8 = parse_token(row[25], float, default=0.0) if 25 < len(row) else 0.0
         if read_unused_fields:
             self.modsw = parse_token(row[1], int, 1)
             self.adjm = parse_token(row[2], int, 0)
@@ -5130,16 +5174,17 @@ class SwitchedShunt:
             self.vswlo = parse_token(row[5], float, 1.0)
             self.swrem = parse_token(row[6], int, 0)
             self.rmpct = parse_token(row[7], float, 100.0)
-            self.rmidnt = parse_token(row[8], str, 12*' ')
-        
-        #CHALLENGE2
+            self.rmidnt = parse_token(row[8], str, 12 * ' ')
+
+        # CHALLENGE2
         self.swsh_susc_count = 8
-        for i in range(1,9):
+        for i in range(1, 9):
             ni = eval('self.n{}'.format(i))
             bi = eval('self.b{}'.format(i))
             if ni is None or bi is None or ni == 0 or bi == 0.0:
-                self.swsh_susc_count = i-1
+                self.swsh_susc_count = i - 1
                 break
+
 
 class Contingency:
 
@@ -5193,7 +5238,7 @@ class Contingency:
             alert(
                 {'data_type': 'Contingency',
                  'error_message': 'fails at most 1 branch out event. Please ensure that each contingency has at most 1 branch out event.',
-                 'diagnostics':{
+                 'diagnostics': {
                      'label': self.label,
                      'num branch out events': len(self.branch_out_events)}})
 
@@ -5203,7 +5248,7 @@ class Contingency:
             alert(
                 {'data_type': 'Contingency',
                  'error_message': 'fails at most 1 generator out event. Please ensure that each contingency has at most 1 generator out event.',
-                 'diagnostics':{
+                 'diagnostics': {
                      'label': self.label,
                      'num generator out events': len(self.generator_out_events)}})
 
@@ -5213,9 +5258,10 @@ class Contingency:
             alert(
                 {'data_type': 'Contingency',
                  'error_message': 'fails at most 1 branch or generator out event. Please ensure that each contingency has at most 1 branch or generator out event.',
-                 'diagnostics':{
+                 'diagnostics': {
                      'label': self.label,
-                     'num branch out events + num generator out events': len(self.branch_out_events) + len(self.generator_out_events)}})
+                     'num branch out events + num generator out events': len(self.branch_out_events) + len(
+                         self.generator_out_events)}})
 
     def check_at_least_one_branch_or_generator_out_event(self):
 
@@ -5223,61 +5269,57 @@ class Contingency:
             alert(
                 {'data_type': 'Contingency',
                  'error_message': 'fails at least 1 branch or generator out event. Please ensure that each contingency has at least 1 branch or generator out event.',
-                 'diagnostics':{
+                 'diagnostics': {
                      'label': self.label,
-                     'num branch out events + num generator out events': len(self.branch_out_events) + len(self.generator_out_events)}})
+                     'num branch out events + num generator out events': len(self.branch_out_events) + len(
+                         self.generator_out_events)}})
 
     def construct_record_rows(self):
 
         rows = (
-            [['CONTINGENCY', self.label]] +
-            [r.construct_record_row()
-             for r in self.branch_out_events] +
-            [r.construct_record_row()
-             for r in self.generator_out_events] +
-            [['END']])
+                [['CONTINGENCY', self.label]] +
+                [r.construct_record_row()
+                 for r in self.branch_out_events] +
+                [r.construct_record_row()
+                 for r in self.generator_out_events] +
+                [['END']])
         return rows
+
 
 class Point:
 
     def __init__(self):
-
         self.x = None
         self.y = None
 
     def check(self):
-
         pass
 
     def read_from_row(self, row):
-
         row = pad_row(row, 2)
         self.x = parse_token(row[0], float, default=None)
         self.y = parse_token(row[1], float, default=None)
 
+
 class BranchOutEvent:
 
     def __init__(self):
-
         self.i = None
         self.j = None
         self.ckt = None
 
     def check(self):
-
         pass
         # need to check (i,j,ckt) is either a line or a transformer
         # need to check that it is active in the base case
 
     def read_from_row(self, row):
-
         check_row_missing_fields(row, 10)
         self.i = parse_token(row[4], int, default=None)
         self.j = parse_token(row[7], int, default=None)
         self.ckt = parse_token(row[9], str, default=None).strip()
 
     def read_from_csv(self, row):
-
         self.i = parse_token(row[2], int, '')
         self.j = parse_token(row[3], int, '')
         self.ckt = parse_token(row[4], str, '1')
@@ -5293,31 +5335,26 @@ class BranchOutEvent:
     '''
 
     def construct_record_row(self):
-
         return ['OPEN', 'BRANCH', 'FROM', 'BUS', self.i, 'TO', 'BUS', self.j, 'CIRCUIT', self.ckt]
+
 
 class GeneratorOutEvent:
 
     def __init__(self):
-
         self.i = None
         self.id = None
 
     def check(self):
-
         pass
         # need to check that (i,id) is a generator and that it is active in the base case
 
     def read_from_csv(self, row):
-
         self.i = parse_token(row[2], int, '')
         self.id = parse_token(row[3], str, '')
 
     def read_from_row(self, row):
-
         self.i = parse_token(row[5], int, default=None)
         self.id = parse_token(row[2], str, default=None).strip()
 
     def construct_record_row(self):
-
         return ['REMOVE', 'UNIT', self.id, 'FROM', 'BUS', self.i]

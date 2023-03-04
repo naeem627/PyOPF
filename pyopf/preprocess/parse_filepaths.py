@@ -29,7 +29,7 @@ def parse_filepaths(case: str,
     if scenario is None:
         path_to_case = case_dir
     else:
-        case = f"{case}_{scenario['name']}_"
+        case = f"{case}_{scenario['name']}"
         path_to_case = f"{case_dir}/{scenario['dir']}"
 
     path_to_case = os.path.normpath(path_to_case)
