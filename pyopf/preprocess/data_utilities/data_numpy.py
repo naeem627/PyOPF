@@ -16,7 +16,7 @@ import time
 import traceback
 
 try:
-    import data_utilities.data as p_data
+    import pyopf.preprocess.data_utilities.data as p_data
 except:
     import data as p_data
 import numpy as np

@@ -5,7 +5,7 @@
 #
 
 try:
-    from data_utilities.swsh_utils_py import solve as solve_py
+    from pyopf.preprocess.data_utilities.swsh_utils_py import solve as solve_py
 except:
     from swsh_utils_py import solve as solve_py
 

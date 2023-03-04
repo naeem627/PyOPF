@@ -1,39 +1,27 @@
 import argparse
-import os
-from pathlib import Path
 from typing import Optional
 
-from pyopf.parse.argparse_actions import ReadJSON
-from pyopf.parse.parse import parse
-from pyopf.parse.parse_filepaths import parse_filepaths
-from pyopf.run import _run_opf
-from pyopf.util.Log import Log
+from pyopf.preprocess.argparse_actions import ReadJSON
+from pyopf.run import run
 
 
 def main(case: str,
          objective: Optional[str] = "min cost",
-         scenario: Optional[dict] = None):
-    # Get root directory path
-    path_to_root = os.getcwd()
+         scenario: Optional[dict] = None,
+         options: Optional[dict] = None):
+    """
 
-    # # Create Logger # #
-    path_to_log = path_to_root + os.path.sep + 'log' + os.path.sep
-    Path(path_to_log).mkdir(parents=True, exist_ok=True)
-    logger = Log(path_to_log, case)
+    Args:
+        case: the name of the network to optimize
+        objective: the optimization objective
+        scenario: the specific network scenario/case to optimize if any exists
+        options: the optimization options
 
-    # # Create Path to Results # #
-    path_to_results = f"{path_to_root}/results/{case}"
-    if scenario is not None:
-        path_to_results = f"{path_to_root}/results/{case}/{scenario['dir']}"
-    Path(path_to_results).mkdir(parents=True, exist_ok=True)
-
-    filepaths = parse_filepaths(case, path_to_root, "cases", scenario, path_to_results, path_to_log)
-
-    # # Parse RAW file and assign grid data to objects # #
-    grid_data, case_data_raw = parse(case, filepaths, logger)
-
+    Returns:
+        A summary of the optimal power flow results as a dictionary
+    """
     # # Run OPF # #
-    _opf_results = _run_opf(case, objective, case_data_raw, grid_data, filepaths)
+    _opf_results = run(case, "cases", objective, scenario, options)
     return _opf_results
 
 
@@ -53,6 +41,11 @@ if __name__ == "__main__":
                             action=ReadJSON,
                             default=None)
 
+    cli_parser.add_argument('--options',
+                            help='options used to modify the optimization; for example changing voltage bounds',
+                            action=ReadJSON,
+                            default=None)
+
     args = cli_parser.parse_args()
 
-    main(args.case, args.obj, args.scenario)
+    main(args.case, args.obj, args.scenario, args.options)

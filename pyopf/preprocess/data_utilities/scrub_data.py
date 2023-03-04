@@ -15,7 +15,7 @@ import time
 
 # gocomp imports
 try:
-    import data_utilities.data as data
+    import pyopf.preprocess.data_utilities.data as data
 except:
     import data
     

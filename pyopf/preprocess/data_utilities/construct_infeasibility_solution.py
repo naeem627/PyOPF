@@ -19,7 +19,7 @@ import time
 
 # gocomp imports
 try:
-    from data_utilities.infeasibility_solution import Solver
+    from pyopf.preprocess.data_utilities.infeasibility_solution import Solver
 except:
     from infeasibility_solution import Solver
 

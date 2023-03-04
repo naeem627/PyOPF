@@ -1,6 +1,6 @@
-from data_utilities.data import Data
+from pyopf.preprocess.data_utilities.data import Data
 from pyopf.models.TransmissionElements import Branch, Bus, Generator, Load, Shunt, SwitchedShunt, Transformer
-from pyopf.parse.check_island import check_island
+from pyopf.preprocess.check_island import check_island
 from pyopf.util.Log import Log
 
 

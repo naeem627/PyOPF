@@ -30,9 +30,9 @@ except ImportError:
 
 # GOComp modules - this should be visible on the GOComp evaluation system
 try:
-    import data_utilities.data as data
-    from data_utilities.swsh_utils import solve_py as swsh_solve
-    from data_utilities.xfmr_utils import compute_xfmr_position
+    import pyopf.preprocess.data_utilities.data as data
+    from pyopf.preprocess.data_utilities.swsh_utils import solve_py as swsh_solve
+    from pyopf.preprocess.data_utilities.xfmr_utils import compute_xfmr_position
 except:
     import data
     from swsh_utils import solve_py as swsh_solve

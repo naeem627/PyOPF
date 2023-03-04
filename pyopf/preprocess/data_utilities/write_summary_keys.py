@@ -7,7 +7,7 @@ python write_summary_keys <out_file_name>
 
 import argparse
 try:
-    from data_utilities.evaluation import write_summary_keys
+    from pyopf.preprocess.data_utilities.evaluation import write_summary_keys
 except:
     from evaluation import write_summary_keys
 

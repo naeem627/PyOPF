@@ -9,3 +9,6 @@ from .parse import *
 
 from . import parse_filepaths
 from .parse_filepaths import *
+
+from . import data_utilities
+from .data_utilities import *

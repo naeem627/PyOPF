@@ -20,12 +20,9 @@ import numpy as np
 # gocomp imports
 #import data_utilities.data as data
 #from data_utilities.evaluation import Evaluation, CaseSolution
-try:
-    import data_utilities.data as data
-    from data_utilities.evaluation import Evaluation, CaseSolution, create_new_summary
-except:
-    import data
-    from evaluation import Evaluation, CaseSolution
+import pyopf.preprocess.data_utilities.data as data
+from pyopf.preprocess.data_utilities.evaluation import Evaluation, CaseSolution, create_new_summary
+
     
 def main():
 

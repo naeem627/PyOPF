@@ -35,9 +35,9 @@ import pandas as pd
 from scipy import sparse as sp
 
 try:
-    import data_utilities.data as data
-    from data_utilities.cost_utils import CostEvaluator
-    from data_utilities.swsh_utils import solve_py as swsh_solve
+    import pyopf.preprocess.data_utilities.data as data
+    from pyopf.preprocess.data_utilities.cost_utils import CostEvaluator
+    from pyopf.preprocess.data_utilities.swsh_utils import solve_py as swsh_solve
 except:
     import data
     from cost_utils import CostEvaluator

@@ -26,8 +26,8 @@ import time
 
 # gocomp imports
 try:
-    import data_utilities.data as data
-    from data_utilities.evaluation import Evaluation, CaseSolution
+    import pyopf.preprocess.data_utilities.data as data
+    from pyopf.preprocess.data_utilities.evaluation import Evaluation, CaseSolution
 except:
     import data
     from evaluation import Evaluation, CaseSolution

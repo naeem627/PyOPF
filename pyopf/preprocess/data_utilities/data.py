@@ -6,6 +6,7 @@ Author: Randy K Tran, randy.tran@pnnl.gov
 
 Date: 2020-07-10
 
+Lightly modified by Naeem Turner-Bandele. Most recent update made as of 2023-03-04.
 """
 # data.py
 # module for input and output data
@@ -27,9 +28,9 @@ except ImportError:
     from io import StringIO
 
 try:
-    from data_utilities.data_json import Sup
-    from data_utilities.swsh_utils import solve_py as swsh_solve
-    from data_utilities.xfmr_utils import compute_xfmr_position
+    from pyopf.preprocess.data_utilities.data_json import Sup
+    from pyopf.preprocess.data_utilities.swsh_utils import solve_py as swsh_solve
+    from pyopf.preprocess.data_utilities.xfmr_utils import compute_xfmr_position
 except:
     from data_json import Sup
     from swsh_utils import solve_py as swsh_solve
@@ -2995,8 +2996,9 @@ class CaseIdentification:
         self.xfrrat = 0
         self.nxfrat = 1
         self.basfrq = 60.0
-        self.record_2 = 'GRID OPTIMIZATION COMPETITION CHALLENGE 2'
-        self.record_3 = 'INPUT DATA FILES ARE RAW JSON CON'
+        self.record_1 = None
+        self.record_2 = None
+        self.record_3 = None
         #self.comment = ''
 
     def check(self):
@@ -3031,8 +3033,11 @@ class CaseIdentification:
     def read_from_rows(self, rows):
 
         self.read_record_1_from_row(rows[0])
-        #self.record_2 = '' # not preserving these at this point
-        #self.record_3 = '' # do that later
+        self.record_1 = rows[0]
+        if len(rows[1]) > 0:
+            self.record_2 = rows[1]
+        if len(rows[2]) > 0:
+            self.record_3 = rows[2]
 
 class Bus:
 
@@ -4276,8 +4281,8 @@ class Transformer:
                     raise Exception('missing field not allowed')
                 elif len(row) > 43:
                     row = remove_end_of_line_comment_from_row(row, '/')
-                    if len(row) > new_row_len: # todo: what is new_row_len? need this to handle end of line comments?
-                        raise Exception('extra field not allowed')
+                    # if len(row) > new_row_len: #
+                    #     raise Exception('extra field not allowed')
         except Exception as e:
             traceback.print_exc()
             raise e

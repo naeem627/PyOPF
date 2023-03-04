@@ -2,9 +2,9 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from pyopf.parse.parse import parse
-from pyopf.parse.parse_filepaths import parse_filepaths
-from pyopf.run import _run_opf
+from pyopf.preprocess.parse import parse
+from pyopf.preprocess.parse_filepaths import parse_filepaths
+from pyopf.run import run_opf
 from pyopf.util.Log import Log
 
 
@@ -31,7 +31,7 @@ class TestOPF:
         grid_data, case_data_raw = parse(case, filepaths, logger)
 
         # # Run OPF # #
-        _opf_results = _run_opf(case, objective, case_data_raw, grid_data, filepaths)
+        _opf_results = run_opf(case, objective, case_data_raw, grid_data, filepaths)
         return _opf_results
 
     def test_ieee14(self):

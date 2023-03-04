@@ -32,7 +32,7 @@ import traceback
 #=======
 #>>>>>>> package:data_utilities/main.py
 try:
-    import data_utilities.evaluation as evaluation
+    import pyopf.preprocess.data_utilities.evaluation as evaluation
 except:
     import evaluation
 
