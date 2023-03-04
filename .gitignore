@@ -132,3 +132,4 @@ dmypy.json
 # PyOPF specific files
 results/
 log/
+cases/**/OPF_solved
