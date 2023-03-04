@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools", "versioneer[toml]==0.28", "numpy", "scipy", "networkx", "sympy", "pyomo", "termcolor"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "pyopf"
 description = "A package to perform AC Optimal Power Flow using a current-voltage formulation."
@@ -11,13 +15,15 @@ authors = [
 maintainers = [
     {name = "Naeem Turner-Bandele", email = "naeem627@users.noreply.github.com"}
 ]
+dynamic = ["version"]
 
 [project.urls]
 "Homepage" = "https://github.com/naeem627/PyOPF"
 "Source" = "https://github.com/naeem627/PyOPF"
 
-[project.scripts]
-pyopf = "pyopf::main"
+
+[project.optional-dependencies]
+toml = ["tomli; python_version < '3.11'"]
 
 [tool.versioneer]
 VCS = "git"
@@ -26,7 +32,3 @@ versionfile_source = "pyopf/_version.py"
 versionfile_build = "pyopf/_version.py"
 tag_prefix = "pyopf-"
 parentdir_prefix = "pyopf-"
-
-[build-system]
-requires = ["setuptools", "versioneer[toml]==0.28"]
-build-backend = "setuptools.build_meta"

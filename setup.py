@@ -1,9 +1,6 @@
 from setuptools import find_packages, setup
 import versioneer
 
-# # Install Requirements # #
-install_requires = ["numpy", "scipy", "networkx", "sympy", "pyomo", "termcolor", "setuptools"]
-
 # # Setup Package # #
 
 setup(
@@ -18,6 +15,5 @@ setup(
     include_package_data=True,
     package_dir={'pyopf': 'pyopf'},
     python_requires='>=3.10',
-    install_requires=install_requires,
     zip_safe=False
 )
