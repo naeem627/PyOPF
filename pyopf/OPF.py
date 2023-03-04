@@ -611,7 +611,7 @@ class OPF:
             ])
 
             Ir_swshunt = sum([
-                obj.calc_real_current(m.Vr[obj.bus], m.Vi[obj.bus], m.Qsh[obj.bus])
+                obj.calc_real_current(m.Vr[obj.bus], m.Vi[obj.bus], m.Qsh[(obj.bus, obj.id)])
                 for obj in grid_data["switched shunts"].values()
                 if obj.bus == bus and obj.status
             ])
@@ -674,7 +674,7 @@ class OPF:
                 if obj.bus == bus and obj.status
             ])
             Ii_swshunt = sum([
-                obj.calc_imag_current(m.Vr[obj.bus], m.Vi[obj.bus], m.Qsh[obj.bus])
+                obj.calc_imag_current(m.Vr[obj.bus], m.Vi[obj.bus], m.Qsh[(obj.bus, obj.id)])
                 for obj in grid_data["switched shunts"].values()
                 if obj.bus == bus and obj.status
             ])
