@@ -32,6 +32,7 @@ from pyopf.util.update_grid_data import update_grid_data
 
 __all__ = ["OPF"]
 
+
 class OPF:
     """Optimization solver for the AC Optimal Power Flow problem using current-voltage formulation.
     """
@@ -115,6 +116,7 @@ class OPF:
               grid_data: dict,
               filepaths: dict,
               objective: Optional[str] = None,
+              opf_options: Optional[dict] = None,
               solver_options=None,
               pyomo_options=None):
         """
@@ -126,6 +128,7 @@ class OPF:
             objective: the objective of the optimization
             solver_options: the options for the nonlinear optimization solver being used
             pyomo_options: pyomo specific solver options that provided for details about the solving process
+            opf_options: options to make changes to the opf model such as providing custom voltage mag bounds
 
         Returns:
             None
@@ -135,7 +138,7 @@ class OPF:
 
         self._logger = logger
 
-        self.create_model(scenario, grid_data, objective=objective)
+        self.create_model(scenario, grid_data, objective=objective, opf_options=opf_options)
 
         logger.info(f"{scenario} Model created successfully")
 
@@ -147,13 +150,15 @@ class OPF:
     def create_model(self,
                      scenario: str,
                      grid_data: dict,
-                     objective: str = None):
+                     objective: str = None,
+                     opf_options: Optional[dict] = None):
         """
         Create an OPF model to solve
         Args:
             scenario: the name of the scenario being optimized
             grid_data: the grid data for the current scenario being optimized
             objective: the objective of the optimization
+            opf_options: options to make changes to the opf model such as providing custom voltage mag bounds
 
         Returns:
             None
@@ -168,7 +173,7 @@ class OPF:
         model = self.create_model_sets(model, grid_data)
 
         # # == INIT OPTIMIZATION DECISION VARIABLES == # #
-        model = self.create_model_decision_variables(model, grid_data)
+        model = self.create_model_decision_variables(model, grid_data, opf_options)
 
         # # == INIT OPTIMIZATION PARAMETERS (CONSTANTS) == # #
         model = self.create_model_parameters(model, grid_data)
@@ -239,12 +244,14 @@ class OPF:
 
     def create_model_decision_variables(self,
                                         model: pe.ConcreteModel,
-                                        grid_data: dict) -> pe.ConcreteModel:
+                                        grid_data: dict,
+                                        opf_options: Optional[dict] = None) -> pe.ConcreteModel:
         """
         Create the OPF model decision variables
         Args:
             model: Pyomo model
             grid_data: the grid data for the current scenario being optimized
+            opf_options: options to make changes to the opf model such as providing custom voltage mag bounds
 
         Returns:
             The pyomo model with the decision variables added
@@ -340,7 +347,14 @@ class OPF:
             Returns:
                 The voltage magnitude bounds at the bus
             """
-            return float(grid_data["buses"][bus].v_nlo), float(grid_data["buses"][bus].v_nhi)
+            if opf_options is not None and "voltage bounds" in opf_options:
+                v_mag_bounds = opf_options.get("voltage bounds")
+                v_mag_lb = v_mag_bounds[0]
+                v_mag_ub = v_mag_bounds[1]
+            else:
+                v_mag_lb = float(grid_data["buses"][bus].v_nlo)
+                v_mag_ub = float(grid_data["buses"][bus].v_nhi)
+            return v_mag_lb, v_mag_ub
 
         model.V_mag = pe.Var(
             model.buses_set,

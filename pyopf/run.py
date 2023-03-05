@@ -19,11 +19,6 @@ def execute_opf(case: str,
                 filepaths: dict,
                 scenario: Optional[dict] = None,
                 options: Optional[dict] = None):
-    if options is not None:
-        voltage_bounds = options.get("voltage bounds", None)
-    else:
-        voltage_bounds = None
-
     # # === Run OPF Scenario === # #
     if scenario is not None:
         scenario_name = f"{case}_{scenario['name']}"
@@ -34,9 +29,13 @@ def execute_opf(case: str,
     opf = OPF()
 
     # create and solve the OPF model
-    opf.solve(scenario_name, transmission_elements, filepaths, objective=objective)
+    opf.solve(scenario_name, transmission_elements, filepaths, objective=objective, opf_options=options)
 
     # # === Save the Solved OPF Model === # #
+    if options is not None:
+        voltage_bounds = options.get("voltage bounds", None)
+    else:
+        voltage_bounds = None
     case_data = postprocess_case(scenario_name, case_data, opf.model, voltage_bounds)
     opf.save_solution(case_data, filepaths)
 
