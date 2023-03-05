@@ -1,4 +1,4 @@
-from pyopf.run import run
+from pyopf.run import run_opf
 
 
 class TestOPFBasic:
@@ -7,7 +7,7 @@ class TestOPFBasic:
         _case = "IEEE-14"
         _objective = "min cost"
 
-        _ieee_14_results = run(case=_case, dir_cases="cases", objective=_objective)
+        _ieee_14_results = run_opf(case=_case, dir_cases="cases", objective=_objective)
 
         # get the solved status
         _solved = _ieee_14_results["Solved"]["Status"]
@@ -19,7 +19,7 @@ class TestOPFBasic:
         _case = "IEEE-118"
         _objective = "min cost"
 
-        _ieee_118_results = run(case=_case, dir_cases="cases", objective=_objective)
+        _ieee_118_results = run_opf(case=_case, dir_cases="cases", objective=_objective)
 
         # get the solved status
         _solved = _ieee_118_results["Solved"]["Status"]
@@ -31,7 +31,7 @@ class TestOPFBasic:
         _case = "Texas7k"
         _objective = "min cost"
 
-        _texas7k_results = run(case=_case, dir_cases="cases", objective=_objective)
+        _texas7k_results = run_opf(case=_case, dir_cases="cases", objective=_objective)
 
         # get the solved status
         _solved = _texas7k_results["Solved"]["Status"]

@@ -1,8 +1,9 @@
-from pyopf.preprocess.data_utilities.data import Data
 from pyopf.models.TransmissionElements import Branch, Bus, Generator, Load, Shunt, SwitchedShunt, Transformer
 from pyopf.preprocess.check_island import check_island
+from pyopf.preprocess.data_utilities.data import Data
 from pyopf.util.Log import Log
 
+__all__ = ["parse"]
 
 def parse_generators(generators: dict,
                      offline_generators: dict,

@@ -17,7 +17,7 @@
   opf = OPF()
 """
 import os
-from math import sqrt, degrees, atan2
+from math import atan2, degrees, sqrt
 from pathlib import Path
 from typing import Optional
 
@@ -30,6 +30,7 @@ from pyopf.util.Log import Log
 from pyopf.util.save_results import save_compressed_results
 from pyopf.util.update_grid_data import update_grid_data
 
+__all__ = ["OPF"]
 
 class OPF:
     """Optimization solver for the AC Optimal Power Flow problem using current-voltage formulation.

@@ -1,4 +1,4 @@
-from pyopf.run import run
+from pyopf.run import run_opf
 
 
 class TestOPFOptions:
@@ -14,8 +14,8 @@ class TestOPFOptions:
             "timestamp": "None"
         }
 
-        _nyiso_results = run(case=_case, dir_cases="cases", objective=_objective, scenario=_scenario,
-                             options=_options)
+        _nyiso_results = run_opf(case=_case, dir_cases="cases", objective=_objective, scenario=_scenario,
+                                 options=_options)
 
         # get the solved status
         _solved = _nyiso_results["Solved"]["Status"]

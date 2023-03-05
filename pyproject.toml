@@ -23,7 +23,7 @@ dynamic = ["version"]
 
 
 [project.optional-dependencies]
-toml = ["tomli; python_version < '3.11'"]
+toml = ["tomli; python_version < '3.10'"]
 
 [tool.versioneer]
 VCS = "git"

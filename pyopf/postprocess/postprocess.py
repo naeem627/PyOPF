@@ -7,16 +7,20 @@ Date Created: December 20, 2022
 Last Updated: March 4, 2023
 
 """
-import math
 import datetime
+import math
+from typing import Optional
 
 import numpy as np
-from typing import Optional
-from pyopf.preprocess.data_utilities.data import Data
 from pyomo.environ import ConcreteModel
 
+from pyopf.preprocess.data_utilities.data import Data
+
+__all__ = ["postprocess_case"]
+
+
 def postprocess_case(scenario_name: str,
-                    case_data: Data,
+                     case_data: Data,
                      opf_results: ConcreteModel,
                      voltage_bounds: Optional[tuple] = None,
                      citation: Optional[dict] = None):
@@ -47,7 +51,7 @@ def postprocess_case(scenario_name: str,
 
     if release_version is not None:
         case_data.raw.case_identification.record_3 = f"/ {datetime.datetime.today()}; " \
-                                                     f"Produced by PyOPF v0.1;" \
+                                                     f"Produced by PyOPF v0.1.1;" \
                                                      f" Case Version {release_version}."
 
     modify_transmission_elements(case_data, opf_results, voltage_bounds)

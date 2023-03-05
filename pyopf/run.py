@@ -2,22 +2,23 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from pyopf.preprocess.data_utilities import Data
 from pyopf.OPF import OPF
-from pyopf.preprocess.parse import parse
 from pyopf.postprocess.postprocess import postprocess_case
+from pyopf.preprocess.data_utilities import Data
+from pyopf.preprocess.parse import parse
 from pyopf.preprocess.parse_filepaths import parse_filepaths
 from pyopf.util.Log import Log
 
+__all__ = ["run_opf", "execute_opf"]
 
-def run_opf(case: str,
-            objective: str,
-            case_data: Data,
-            transmission_elements: dict,
-            filepaths: dict,
-            scenario: Optional[dict] = None,
-            options: Optional[dict] = None):
 
+def execute_opf(case: str,
+                objective: str,
+                case_data: Data,
+                transmission_elements: dict,
+                filepaths: dict,
+                scenario: Optional[dict] = None,
+                options: Optional[dict] = None):
     if options is not None:
         voltage_bounds = options.get("voltage bounds", None)
     else:
@@ -42,11 +43,11 @@ def run_opf(case: str,
     return opf.results_summary
 
 
-def run(case: str,
-        dir_cases: str,
-        objective: Optional[str] = "min cost",
-        scenario: Optional[dict] = None,
-        options: Optional[dict] = None):
+def run_opf(case: str,
+            dir_cases: str,
+            objective: Optional[str] = "min cost",
+            scenario: Optional[dict] = None,
+            options: Optional[dict] = None):
     # Get root directory path
     root_dir = os.getcwd()
 
@@ -67,5 +68,5 @@ def run(case: str,
     transmission_elements, case_data = parse(case, filepaths, logger)
 
     # # Run OPF # #
-    _opf_results = run_opf(case, objective, case_data, transmission_elements, filepaths, scenario, options)
+    _opf_results = execute_opf(case, objective, case_data, transmission_elements, filepaths, scenario, options)
     return _opf_results

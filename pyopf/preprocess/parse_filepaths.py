@@ -1,6 +1,7 @@
 import os
 from typing import Optional
 
+__all__ = ["parse_filepaths"]
 
 def parse_filepaths(case: str,
                     root_dir: str,

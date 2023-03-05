@@ -310,6 +310,7 @@ https://img.shields.io/travis/com/python-versioneer/python-versioneer.svg
 
 import configparser
 import errno
+import functools
 import json
 import os
 import re
@@ -317,7 +318,6 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Callable, Dict
-import functools
 
 have_tomllib = True
 if sys.version_info >= (3, 11):
@@ -1940,7 +1940,7 @@ def get_cmdclass(cmdclass=None):
                 print("UPDATING %s" % target_versionfile)
                 write_to_version_file(target_versionfile, versions)
 
-                _build_exe.run(self)
+                _build_exe.run_opf(self, )
                 os.unlink(target_versionfile)
                 with open(cfg.versionfile_source, "w") as f:
                     LONG = LONG_VERSION_PY[cfg.VCS]
@@ -1969,7 +1969,7 @@ def get_cmdclass(cmdclass=None):
                 print("UPDATING %s" % target_versionfile)
                 write_to_version_file(target_versionfile, versions)
 
-                _py2exe.run(self)
+                _py2exe.run_opf(self, )
                 os.unlink(target_versionfile)
                 with open(cfg.versionfile_source, "w") as f:
                     LONG = LONG_VERSION_PY[cfg.VCS]

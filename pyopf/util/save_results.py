@@ -4,7 +4,7 @@ from typing import Union
 
 import numpy as np
 
-
+__all__ = ["save_compressed_results"]
 def save_compressed_results(filepaths: dict,
                             filename: str,
                             results: Union[dict, float, np.ndarray, list]):

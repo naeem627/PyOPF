@@ -2,7 +2,7 @@ import argparse
 from typing import Optional
 
 from pyopf.preprocess.argparse_actions import ReadJSON
-from pyopf.run import run
+from pyopf.run import run_opf
 
 
 def main(case: str,
@@ -21,7 +21,7 @@ def main(case: str,
         A summary of the optimal power flow results as a dictionary
     """
     # # Run OPF # #
-    _opf_results = run(case, "cases", objective, scenario, options)
+    _opf_results = run_opf(case, "cases", objective, scenario, options)
     return _opf_results
 
 
