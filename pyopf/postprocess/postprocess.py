@@ -39,7 +39,7 @@ def postprocess_case(scenario_name: str,
     case_data = modify_records(scenario_name, case_data, citation)
 
     # # Modify Transmission Elements Based on OPF # #
-    modify_transmission_elements(case_data, opf_results, voltage_bounds)
+    case_data = modify_transmission_elements(case_data, opf_results, voltage_bounds)
 
     return case_data
 
@@ -145,3 +145,5 @@ def modify_transmission_elements(case_data_raw: Data,
         else:
             case_data_raw.raw.switched_shunts[(key[0],)].status = 1
             case_data_raw.raw.switched_shunts[(key[0],)].binit = round(binit, 3)
+
+    return case_data_raw
