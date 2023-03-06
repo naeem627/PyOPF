@@ -4,7 +4,7 @@ Postprocessing functions
 Author: Naeem Turner-Bandele
 Email: naeem@naeem.engineer
 Date Created: December 20, 2022
-Last Updated: March 4, 2023
+Last Updated: March 6, 2023
 
 """
 import datetime
@@ -16,7 +16,7 @@ from pyomo.environ import ConcreteModel
 
 from pyopf.preprocess.data_utilities.data import Data
 
-__all__ = ["postprocess_case"]
+__all__ = ["postprocess_case", "modify_records", "modify_transmission_elements"]
 
 
 def postprocess_case(scenario_name: str,
@@ -36,6 +36,17 @@ def postprocess_case(scenario_name: str,
 
     """
     # # Modify Case Identification Records # #
+    case_data = modify_records(scenario_name, case_data, citation)
+
+    # # Modify Transmission Elements Based on OPF # #
+    modify_transmission_elements(case_data, opf_results, voltage_bounds)
+
+    return case_data
+
+
+def modify_records(scenario_name: str,
+                   case_data: Data,
+                   citation: Optional[dict] = None):
     if citation is not None:
         case_source = citation["source"]
         release_version = citation["version"]  # the release version of the grid network case
@@ -53,26 +64,6 @@ def postprocess_case(scenario_name: str,
         case_data.raw.case_identification.record_3 = f"/ {datetime.datetime.today()}; " \
                                                      f"Produced by PyOPF v0.1.1;" \
                                                      f" Case Version {release_version}."
-
-    modify_transmission_elements(case_data, opf_results, voltage_bounds)
-
-    # P_renewable = sum([val.value for key, val in opf_results.Pu.items()])
-    # Q_renewable = sum([ele.value for key, ele in opf_results.Qu.items()])
-    #
-    # P_load = sum([ele.pl for ele in case_data_raw.raw.loads.values()]) / 100
-    # Q_load = sum([ele.ql for ele in case_data_raw.raw.loads.values()]) / 100
-    #
-    # P_gen = sum([ele.pg for ele in case_data_raw.raw.generators.values() if ele.stat]) / 100
-    #
-    # Q_gen = sum([ele.qg for ele in case_data_raw.raw.generators.values() if ele.stat]) / 100
-    #
-    # P_conv_gen = P_gen - P_renewable
-    # Q_conv_gen = Q_gen - Q_renewable
-    #
-    # print(
-    #     f"PSCASEMOD - Load P,Q:({P_load},{Q_load}), Conv. Gen P,Q:({P_conv_gen, Q_conv_gen}), Renewable P,"
-    #     f"Q: ({P_renewable}"
-    #     f",{Q_renewable}), Gen P,Q: ({P_gen}, {Q_gen})")
     return case_data
 
 
