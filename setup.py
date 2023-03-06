@@ -1,4 +1,5 @@
 from setuptools import find_packages, setup
+
 import versioneer
 
 # # Setup Package # #
@@ -14,6 +15,6 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_dir={'pyopf': 'pyopf'},
-    python_requires='>=3.10',
+    python_requires='>=3.11',
     zip_safe=False
 )
