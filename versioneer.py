@@ -1940,7 +1940,7 @@ def get_cmdclass(cmdclass=None):
                 print("UPDATING %s" % target_versionfile)
                 write_to_version_file(target_versionfile, versions)
 
-                _build_exe.run_opf(self, )
+                _build_exe.run(self)
                 os.unlink(target_versionfile)
                 with open(cfg.versionfile_source, "w") as f:
                     LONG = LONG_VERSION_PY[cfg.VCS]
@@ -1969,7 +1969,7 @@ def get_cmdclass(cmdclass=None):
                 print("UPDATING %s" % target_versionfile)
                 write_to_version_file(target_versionfile, versions)
 
-                _py2exe.run_opf(self, )
+                _py2exe.run(self)
                 os.unlink(target_versionfile)
                 with open(cfg.versionfile_source, "w") as f:
                     LONG = LONG_VERSION_PY[cfg.VCS]
