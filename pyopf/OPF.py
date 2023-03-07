@@ -293,7 +293,7 @@ class OPF:
 
         model.Pg = pe.Var(
             model.generators_set,
-            domain=pe.NonNegativeReals,
+            domain=pe.Reals,
             initialize=init_generator_active_power,
             bounds=init_generator_active_bounds
         )
