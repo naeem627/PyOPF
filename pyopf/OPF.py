@@ -16,6 +16,7 @@
 
   opf = OPF()
 """
+import json
 import os
 from math import atan2, degrees, sqrt
 from pathlib import Path
@@ -176,7 +177,7 @@ class OPF:
         model = self.create_model_decision_variables(model, grid_data, opf_options)
 
         # # == INIT OPTIMIZATION PARAMETERS (CONSTANTS) == # #
-        model = self.create_model_parameters(model, grid_data)
+        model = self.create_model_parameters(model, grid_data, opf_options)
 
         # # == DEFINE OPTIMIZATION OBJECTIVE FUNCTION == # #
         model = self.create_model_objective(model, objective)
@@ -503,12 +504,14 @@ class OPF:
 
     def create_model_parameters(self,
                                 model: pe.ConcreteModel,
-                                grid_data: dict) -> pe.ConcreteModel:
+                                grid_data: dict,
+                                opf_options: Optional[dict] = None) -> pe.ConcreteModel:
         """
         Create the OPF model parameters
         Args:
             model: Pyomo model
             grid_data: the grid data for the current scenario being optimized
+            opf_options: options to make changes to the opf model such as providing custom voltage mag bounds
 
         Returns:
             The pyomo model with the parameters added
@@ -520,9 +523,35 @@ class OPF:
         model.Qd = pe.Param(model.loads_set, initialize=Qd, domain=pe.Reals)
 
         # costs
-        model.a_cost = pe.Param(model.generators_set, default=0.)
-        model.b_cost = pe.Param(model.generators_set, default=1.0)
-        model.c_cost = pe.Param(model.generators_set, default=0.0)
+        gen_costs = None
+        if opf_options is not None and "costs" in opf_options:
+            gen_costs = json.load(open(opf_options["costs"]))
+        a_cost = {}
+        b_cost = {}
+        c_cost = {}
+        for gen_key in model.generators_set:
+            a_cost[gen_key] = 0
+            b_cost[gen_key] = 1
+            c_cost[gen_key] = 0
+            if gen_costs is not None:
+                gen_cost = next((obj for obj in gen_costs if (obj["bus"], obj["id"].strip()) == gen_key), None)
+                if gen_cost is not None:
+                    # quadratic costs
+                    if len(gen_cost["poly_coeff"]) == 3:
+                        a_cost[gen_key] = gen_cost["poly_coeff"][2]
+                        b_cost[gen_key] = gen_cost["poly_coeff"][1]
+                        c_cost[gen_key] = gen_cost["poly_coeff"][0]
+                    elif len(gen_cost["poly_coeff"]) == 2:
+                        # linear costs
+                        a_cost[gen_key] = gen_cost["poly_coeff"][1]
+                        b_cost[gen_key] = gen_cost["poly_coeff"][0]
+                    elif len(gen_cost["poly_coeff"]) == 1:
+                        # constant costs
+                        a_cost[gen_key] = gen_cost["poly_coeff"][0]
+
+        model.a_cost = pe.Param(model.generators_set, initialize=a_cost)
+        model.b_cost = pe.Param(model.generators_set, initialize=b_cost)
+        model.c_cost = pe.Param(model.generators_set, initialize=c_cost)
 
         return model
 
