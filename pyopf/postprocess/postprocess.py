@@ -106,9 +106,6 @@ def modify_transmission_elements(case_data_raw: Data,
             case_data_raw.raw.generators[key].pg = pg_MW
             case_data_raw.raw.generators[key].qg = qg_MVAR
 
-            # set the lower limit of the dispatch to the current value so that it does not dip below
-            case_data_raw.raw.generators[key].pb = pg_MW
-
             # if not supplying any active or reactive power then turn the generator off
             if np.abs(pg_MW) < (10 ** -n_gen_digits) and np.abs(qg_MVAR) < (10 ** -n_gen_digits):
                 case_data_raw.raw.generators[key].pb = 0.0

@@ -531,7 +531,7 @@ class OPF:
         c_cost = {}
         for gen_key in model.generators_set:
             a_cost[gen_key] = 0
-            b_cost[gen_key] = 1
+            b_cost[gen_key] = 0
             c_cost[gen_key] = 0
             if gen_costs is not None:
                 gen_cost = next((obj for obj in gen_costs if (obj["bus"], obj["id"].strip()) == gen_key), None)
