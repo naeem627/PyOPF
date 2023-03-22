@@ -1,5 +1,4 @@
 from pyopf.models.TransmissionElements import Branch, Bus, Generator, Load, Shunt, SwitchedShunt, Transformer
-from pyopf.preprocess.check_island import check_island
 from pyopf.preprocess.data_utilities.data import Data
 from pyopf.util.Log import Log
 
@@ -160,13 +159,6 @@ def parse(case: str,
         "loads": loads,
     }
     case_data_raw = data
-
-    # # === CHECK FOR ISLANDS AND DANGLING BUSES AND TURN OFF ANY ELEMENTS ON A DANGLING BUS === # #
-    network, grid_data = check_island(grid_data, non_empty_buses, logger)
-
-    grid_data["buses"] = buses
-    grid_data["branches"] = branches
-    grid_data["transformers"] = transformers
 
     logger.info(f"Finished parsing grid data for {case}.")
     logger.info(

@@ -537,17 +537,25 @@ class OPF:
                 gen_cost = next((obj for obj in gen_costs if (obj["bus"], obj["id"].strip()) == gen_key), None)
                 if gen_cost is not None:
                     # quadratic costs
-                    if len(gen_cost["poly_coeff"]) == 3:
-                        a_cost[gen_key] = gen_cost["poly_coeff"][2]
-                        b_cost[gen_key] = gen_cost["poly_coeff"][1]
-                        c_cost[gen_key] = gen_cost["poly_coeff"][0]
-                    elif len(gen_cost["poly_coeff"]) == 2:
-                        # linear costs
-                        a_cost[gen_key] = gen_cost["poly_coeff"][1]
-                        b_cost[gen_key] = gen_cost["poly_coeff"][0]
-                    elif len(gen_cost["poly_coeff"]) == 1:
-                        # constant costs
-                        a_cost[gen_key] = gen_cost["poly_coeff"][0]
+                    if type(gen_cost["poly_coeff"]) == list:
+                        if len(gen_cost["poly_coeff"]) == 3:
+                            a_cost[gen_key] = gen_cost["poly_coeff"][2]
+                            b_cost[gen_key] = gen_cost["poly_coeff"][1] * 100
+                            c_cost[gen_key] = gen_cost["poly_coeff"][0] * 100
+                        elif len(gen_cost["poly_coeff"]) == 2:
+                            # linear costs
+                            a_cost[gen_key] = gen_cost["poly_coeff"][1]
+                            b_cost[gen_key] = gen_cost["poly_coeff"][0] * 100
+                        elif len(gen_cost["poly_coeff"]) == 1:
+                            # constant costs
+                            a_cost[gen_key] = gen_cost["poly_coeff"][0]
+                    else:
+                        a_cost[gen_key] = gen_cost["poly_coeff"]
+            else:
+                a_cost[gen_key] = 0
+                b_cost[gen_key] = 1
+                c_cost[gen_key] = 0
+
 
         model.a_cost = pe.Param(model.generators_set, initialize=a_cost)
         model.b_cost = pe.Param(model.generators_set, initialize=b_cost)
@@ -950,13 +958,12 @@ class OPF:
             "Objective": {"name": self._objective, "value": obj_value},
             "Runtime": self._runtime,
             "Cost per Gen": cost_per_gen,
-            "Total Cost": total_cost * 100,
+            "Total Cost": total_cost,
             "Generators": gen_results,
             "Voltages": voltage_results,
             "Lines": I_line_results,
             "Transformers": I_transformer_results
         }
-
         return results
 
     def save_solution(self,
