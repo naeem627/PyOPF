@@ -6,7 +6,8 @@ class TestOPFOptions:
         _case = "NYISO"
         _objective = "min cost"
         _options = {
-            "voltage bounds": (0.95, 1.05)
+            "voltage bounds": (0.95, 1.05),
+            "costs": "cases/NYISO/scenarios/offpeak/NYISO_offpeak2019_v23_shunts_as_gens_costs.json"
         }
         _scenario = {
             "dir": "scenarios/offpeak",
